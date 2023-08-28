@@ -1,0 +1,53 @@
+﻿<Window x:Class="TestWPF.TableViewer"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TestWPF"
+        mc:Ignorable="d"
+        Title="TableViewer" Height="450" Width="800" Closed="Window_Closed">
+    <Grid>
+        <Popup x:Name="IndexHelperPopup" Width="400" Height="300" Placement="MousePoint" StaysOpen="False">
+            <ListBox x:Name="IndexHelperListBox" MaxHeight="600">
+            </ListBox>
+        </Popup>
+        <DockPanel>
+            <StackPanel VerticalAlignment="Center">
+                <CheckBox x:Name="NotForeignColumnHideCheckBox" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">참조되지 않은 칼럼 숨기기</CheckBox>
+                <Label HorizontalAlignment="Center">표시할 코멘트</Label>
+                <ComboBox x:Name="CommentComboBox" SelectionChanged="CommentComboBox_SelectionChanged"></ComboBox>
+                <Label HorizontalAlignment="Center">고정할 칼럼의 수</Label>
+                <ComboBox x:Name="FrozenColumCountComboBox" ToolTip="왼쪽 부터 몇개의 칼럼을 고정시킬지 설정합니다." SelectionChanged="ComboBox_SelectionChanged"></ComboBox>
+                <Button Click="Button_Click">초기화</Button>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Top" HorizontalAlignment="Left">
+                <d:Button>테스트용</d:Button>
+            </StackPanel>
+            <DataGrid x:Name="MyDataGrid" DockPanel.Dock="Right" PreparingCellForEdit="MyDataGrid_PreparingCellForEdit" CellEditEnding="MyDataGrid_CellEditEnding" SelectedCellsChanged="MyDataGrid_SelectedCellsChanged" SelectionMode="Extended" SelectionUnit="Cell" EnableColumnVirtualization="True" MaxWidth="2000" MaxHeight="1200" RowHeight="25">
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridRow">
+                        <Style.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey }" Color="LightGray"/>
+                        </Style.Resources>
+                    </Style>
+                </DataGrid.Resources>
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Excel에서 선택하여 보기" Click="MenuItem_Click"/>
+                        <MenuItem Header="Excel의 새 창에 복사하여 보기" Click="MenuItem_Click_5"/>
+                        <Separator/>
+                        <MenuItem Header="참조된 테이블 열기" Click="MenuItem_Click_7"></MenuItem>
+                        <Separator/>
+                        <MenuItem Header="선택한 셀의 열만 보기" Click="MenuItem_Click_1"/>
+                        <MenuItem Header="선택한 셀의 열을 숨기기" Click="MenuItem_Click_2"/>
+                        <!--<Separator/>
+                <MenuItem Header="선택한 셀의 행만 보기" Click="MenuItem_Click_3"/>
+                <MenuItem Header="선택한 셀의 행만 숨기기" Click="MenuItem_Click_4"/>-->
+                        <Separator/>
+                        <MenuItem Header="원래 값으로 되돌리기" Click="MenuItem_Click_6"/>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+            </DataGrid>
+        </DockPanel>
+    </Grid>
+</Window>
