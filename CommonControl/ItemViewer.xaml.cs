@@ -380,7 +380,14 @@ namespace TestWPF
         private void UserControl_KeyDown(object sender, KeyEventArgs e)
         {
             Utility.Log("키 입력");
-            if(e.Key < Key.A || Key.Z < e.Key)
+
+            if(e.Key == Key.Enter && SelectedItemList.Last() != null)
+            {
+                Utility.ExecuteProcess(SelectedItemList.Last().Path);
+                return;
+            }
+
+            if (e.Key < Key.A || Key.Z < e.Key)
             {
                 return;
             }
