@@ -54,7 +54,13 @@ namespace TestWPF
             if (File.Exists(filePath))
             {
                 string jsonString = File.ReadAllText(filePath);
-                Utility.Log("GameDataTable의 메타데이터 파일을 엽니다. 경로: " + Path.GetFullPath(filePath));
+                if(jsonString == "")
+                {
+                    Utility.Log(filePath + " 데이터를 읽지 못했습니다.", Utility.LogType.Warning);
+                    return;
+                }
+
+                Utility.Log("파일을 읽습니다 경로: " + Path.GetFullPath(filePath));
                 MExcel.TableMap = JsonSerializer.Deserialize<ConcurrentDictionary<string, GameDataTable>>(jsonString);
             }
         }

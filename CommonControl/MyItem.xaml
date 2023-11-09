@@ -5,19 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TestWPF"
              mc:Ignorable="d" 
-             d:DesignHeight="120" d:DesignWidth="100" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave">
+             d:DesignHeight="15
+             0" d:DesignWidth="100" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave">
 
     <Grid>
         <Border x:Name="MouseEnterBorder" BorderBrush="Black" BorderThickness="2,2,2,2" Visibility="Hidden"/>
-        <Image x:Name="BookMarkIcon" MaxWidth="30" MaxHeight="30" HorizontalAlignment="Right" VerticalAlignment="Top" MinWidth="20" MinHeight="20" Width="30" Height="30" Source="/1835fddc51a538f18.gif" Panel.ZIndex="1">
-        </Image>
-        <StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Image x:Name="BookMarkIcon" MaxWidth="30" MaxHeight="30" HorizontalAlignment="Right" VerticalAlignment="Top" MinWidth="20" MinHeight="20" Width="30" Height="30" Source="/1835fddc51a538f18.gif" Panel.ZIndex="1">
+            </Image>
             <Image x:Name="ExcelIcon" Source="/Data/Image/Excel.png">
             </Image>
-            <TextBlock x:Name="FileNameTextBlock" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Center">
+            <TextBlock Grid.Row="1" x:Name="FileNameTextBlock" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Center">
                 파일 이름
             </TextBlock>
-        </StackPanel>
+        </Grid>
         <Grid x:Name="SelectedRectangle" Background="#FF007C22" Opacity="0.2" Visibility="Collapsed">
         </Grid>
     </Grid>

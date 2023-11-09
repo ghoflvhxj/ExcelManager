@@ -26,7 +26,7 @@
                             <SolidColorBrush Color="White" Opacity="0.0"/>
                         </Canvas.Background>
                     </Canvas>
-                    <WrapPanel x:Name="ItemListWrapPanel" ItemHeight="120" ItemWidth="100" Orientation="Horizontal" VerticalAlignment="Top">
+                    <WrapPanel x:Name="ItemListWrapPanel" ItemHeight="150" ItemWidth="100" Orientation="Horizontal" VerticalAlignment="Top">
                         <WrapPanel.Resources>
                             <Style TargetType="{x:Type local:MyItem}">
                                 <Setter Property="Margin" Value="0,10,5,0"/>

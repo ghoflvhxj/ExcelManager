@@ -499,7 +499,10 @@ namespace TestWPF
                     {
                         App.Current.Dispatcher.BeginInvoke((Action)(() =>
                         {
-                            OnRowRead(++progressCounter / LoadedGameDataTables.Count);
+                            if(OnRowRead != null)
+                            {
+                                OnRowRead(++progressCounter / LoadedGameDataTables.Count);
+                            }
                         }));
 
                         Utility.Log(Utility.GetOnlyFileName(table.FilePath) + " 바이너리 파일 생성완료", Utility.LogType.Message);
