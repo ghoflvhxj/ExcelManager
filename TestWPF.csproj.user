@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+  <ItemGroup>
+    <ApplicationDefinition Update="App.xaml">
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="CommonControl\ItemViewer.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="CommonControl\TestControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Panels\EditorPanel.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Panels\TablePanel\TablePanel.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="CommonControl\MyItem.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Panels\TableReferenceModifyPanel\Control\TableReferenceModfiyPanelItem.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Panels\TableReferenceModifyPanel\TableReferenceModifyPanel.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Window\CheckBoxSelector.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Window\TableReferenceModifier.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Window\TableViewer.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="CommonControl\ItemViewer.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CommonControl\TestControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="MainWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Panels\EditorPanel.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Panels\TablePanel\TablePanel.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CommonControl\MyItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Panels\TableReferenceModifyPanel\Control\TableReferenceModfiyPanelItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Panels\TableReferenceModifyPanel\TableReferenceModifyPanel.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Window\CheckBoxSelector.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Window\TableReferenceModifier.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Window\TableViewer.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+</Project>

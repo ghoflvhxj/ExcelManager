@@ -1,0 +1,186 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:TestWPF"
+             xmlns:CommonControl="clr-namespace:TestWPF.CommonControl" x:Class="TestWPF.EditorPanel"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <TabControl x:Name="EditorTabControl">
+            <TabItem>
+                <TabItem.Header>기본</TabItem.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" MinHeight="200"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <GroupBox VerticalAlignment="Stretch" Header="에디터" Grid.Row="0">
+                        <Grid x:Name="EditorGrid" MouseEnter="Grid_MouseEnter">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="4*"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0" Grid.Column="0">
+                                    <Grid Grid.Row="0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="4*"/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <Button Click="Button_Click_7" Grid.Row="0" Grid.Column="0" Margin="10,10,10,10" Content="에디터 실행"/>
+                                        <Grid Grid.Row="1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Button Margin="10,0,10,0" Click="Button_Click_8" Content="세이브 파일 삭제"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Grid.ColumnSpan="1" HorizontalAlignment="Center">
+                                <Label x:Name="UpdateAndExecuteEditorButtonMessage" Grid.Row="1" d:Content="업데이트 메시지" HorizontalAlignment="Center" Foreground="Black" VerticalAlignment="Center"/>
+                                <Button x:Name="UpdateAndExecuteEditorButton" Click="UpdateAndExecuteEditorButton_Click" IsEnabled="false" Grid.Row="0" Grid.Column="1" ToolTip="에디터와 SVN 레포지토리를 업데이트 합니다. 프로그래머는 SVN만 업데이트 됩니다." HorizontalAlignment="Center" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" Margin="5,10,5,5">
+                                    <Image Source="/Data/Image/Update.PNG"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox VerticalAlignment="Stretch" Header="플레이" Grid.Row="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <Button HorizontalAlignment="Stretch" Grid.Row="0" VerticalAlignment="Stretch" Click="Button_Click_1" ToolTip="에디터를 한개의 서버와 설정된 개수의 클라이언트로 실행합니다." Margin="10,0,10,0" Content="에디터를 게임으로 실행"/>
+                                <Button HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" Click="Button_Click_2" ToolTip="게임으로 실행된 에디터 프로세스들을 종료합니다." Margin="10,0,10,0" Content="실행된 게임 종료"/>
+                            </Grid>
+                            <Grid Grid.Column="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="9*"/>
+                                    <RowDefinition/>
+                                    <!--<RowDefinition></RowDefinition>-->
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Content="클라이언트 실행 개수"/>
+                                    <ComboBox Grid.Row="0" Grid.Column="1" x:Name="ClientCountComboBox" SelectedIndex="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                                    <Label Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Content="게임모드"/>
+                                    <ComboBox Grid.Row="1" Grid.Column="1" x:Name="GameModeComboBox" SelectedIndex="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Grid.Column="0" Text="{Binding Name}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Label Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Content="매칭서버"/>
+                                    <ComboBox Grid.Row="2" Grid.Column="1" x:Name="MatchingServerComboBox" SelectedIndex="0" SelectionChanged="MatchingServerComboBox_SelectionChanged" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Grid.Column="0" Text="{Binding InfoString}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="{x:Type TextBlock}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsChecked, ElementName=UseMatching}" Value="True">
+                                                                    <Setter Property="Foreground" Value="Gray"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </Grid>
+                                <CheckBox Grid.Row="1" x:Name="ConnectToLocalServerCheckBox" ToolTip="클라이언트가 로컬 서버로 즉시 접속합니다. 클라이언트가 화면이 보이기 까지 시간이 조금 늘어날 수 있습니다." FlowDirection="RightToLeft" HorizontalContentAlignment="Left" UseLayoutRounding="False" HorizontalAlignment="Right">
+                                    <TextBlock FlowDirection="LeftToRight"><Run Text="멀티 로비로 바로 연결"/></TextBlock>
+                                </CheckBox>
+                            </Grid>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>확장기능</TabItem.Header>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button VerticalAlignment="Top" Click="Button_Click_3" Content="네임드 파이프 메시지 보내기"/>
+                        <Button VerticalAlignment="Top" Click="Button_Click_4" Content="삭제"/>
+                    </StackPanel>
+                    <GroupBox>
+                        <StackPanel>
+                            <Button VerticalAlignment="Top" Click="Button_Click_5" Content="매크로 실행"/>
+                            <ListBox x:Name="EditorMacroListBox">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200"/>
+                                                <ColumnDefinition Width="200"/>
+                                                <ColumnDefinition Width="200"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Key}"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding Input}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </GroupBox>
+
+
+                    <StackPanel Orientation="Vertical">
+                        <ListBox x:Name="ProcessInfoTextBlock" Height="200" MouseDoubleClick="ProcessInfoTextBlock_MouseDoubleClick">
+                            <ListBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="PID 복사" Click="MenuItem_Click"/>
+                                    <Separator/>
+                                </ContextMenu>
+                            </ListBox.ContextMenu>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="200"/>
+                                            <ColumnDefinition Width="200"/>
+                                            <!--<ColumnDefinition></ColumnDefinition>-->
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" Margin="2" Text="{Binding StrType}"/>
+                                        <TextBlock Grid.Column="1" Margin="2" Text="{Binding StrPID}"/>
+                                        <!--<TextBlock Grid.Column="2" Text="{Binding Path = }"></TextBlock>-->
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                    <Button Click="Button_Click_6" Content="CPU 과부화"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

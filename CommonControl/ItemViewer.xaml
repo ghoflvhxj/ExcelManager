@@ -1,0 +1,40 @@
+﻿<UserControl x:Class="TestWPF.ItemViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TestWPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" KeyDown="UserControl_KeyDown">
+    <Grid x:Name="test">
+        <StackPanel>
+            <StackPanel x:Name="A" Grid.Row="0" VerticalAlignment="Top">
+                <StackPanel x:Name="ItemViewerHead" Orientation="Horizontal" Background="Gray" VerticalAlignment="Top" MouseLeftButtonDown="Label_MouseLeftButtonDown" MouseMove="ItemViewerHead_MouseMove" MouseLeave="Label_MouseLeave">
+                    <d:Label VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Content="아이템 뷰어"/>
+                    <Label VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Content="{Binding Path=Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"/> 
+                    <Rectangle Width="2" Fill="#FF444444" VerticalAlignment="Center" HorizontalAlignment="Stretch" Height="20"></Rectangle>
+                    <StackPanel x:Name="MenuPanel" Orientation="Horizontal"/>
+                </StackPanel>
+            </StackPanel>
+            <ScrollViewer x:Name="ScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto" VerticalAlignment="Top">
+                <ScrollViewer.RenderTransform>
+                    <ScaleTransform x:Name="ItemListPanelScaleTransform" ScaleX="1" ScaleY="1"></ScaleTransform>
+                </ScrollViewer.RenderTransform>
+                <Grid MouseLeftButtonDown="Grid_MouseLeftButtonDown" MouseLeftButtonUp="Grid_MouseLeftButtonUp" MouseRightButtonDown="Grid_MouseRightButtonDown" MouseMove="Grid_MouseMove">
+                    <Canvas x:Name="DragSelectionCanvnas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MouseLeftButtonDown="DragSelectionCanvnas_MouseLeftButtonDown" MouseLeftButtonUp="DragSelectionCanvnas_MouseLeftButtonUp" MouseMove="DragSelectionCanvnas_MouseMove">
+                        <Canvas.Background>
+                            <SolidColorBrush Color="White" Opacity="0.0"/>
+                        </Canvas.Background>
+                    </Canvas>
+                    <WrapPanel x:Name="ItemListWrapPanel" ItemHeight="120" ItemWidth="100" Orientation="Horizontal" VerticalAlignment="Top">
+                        <WrapPanel.Resources>
+                            <Style TargetType="{x:Type local:MyItem}">
+                                <Setter Property="Margin" Value="0,10,5,0"/>
+                            </Style>
+                        </WrapPanel.Resources>
+                    </WrapPanel>
+                </Grid>
+            </ScrollViewer>
+        </StackPanel>
+    </Grid>
+</UserControl>
