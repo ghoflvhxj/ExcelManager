@@ -12,11 +12,21 @@ namespace TestWPF
     public class ConfigUtility
     {
         private Configuration Config = null;
-        static public string ConfigPathName { get; set; }
+
         static public string ProjectName { get { return System.Reflection.Assembly.GetEntryAssembly().GetName().Name; } }
-        static public string ConfigPath { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProjectName); } }
-        static public string SavedFileName { get { return "WeatherForecast.json"; } }
-        static public string SavedFilePath { get { return Path.Combine(ConfigUtility.ConfigPath, SavedFileName); } }
+
+        // This will get the current WORKING directory (i.e. \bin\Debug)
+        static string workingDirectory = Environment.CurrentDirectory;
+
+        // This will get the current PROJECT bin directory (ie ../bin/)
+        static string binaryDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
+
+        // This will get the current PROJECT directory
+        static string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.Parent.FullName;
+
+        static public string DataPath { get { return Path.Combine(projectDirectory, "Data"); }  }
+        static public string ConfigPath { get { return Path.Combine(DataPath, "ExcelManager.config"); } }
+        static public string CachedDataPath { get { return Path.Combine(DataPath, "CachedData.json"); } }
         static public string BookmarkFileName { get { return "Bookmark.json"; } }
 
         public ConfigUtility()
@@ -26,12 +36,10 @@ namespace TestWPF
 
         public void Initilaize()
         {;
-            ConfigPathName = Path.Combine(ConfigPath, "Setting.config");
-
-            Utility.Log("설정 파일을 엽니다. 경로: " + Path.GetFullPath(ConfigPathName));
+            Utility.Log("설정 파일을 엽니다. 경로: " + Path.GetFullPath(ConfigPath));
 
             ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
-            fileMap.ExeConfigFilename = ConfigPathName;
+            fileMap.ExeConfigFilename = ConfigPath;
             Config = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
 
             Config.Save();

@@ -24,10 +24,6 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace TestWPF
 {
-    /// <summary>
-    /// EditorPanel.xaml에 대한 상호 작용 논리
-    /// </summary>
-
     public partial class EditorPanel : System.Windows.Controls.UserControl
     {
         public List<EditorProcessInfo> EditorProcessList = new();
@@ -50,9 +46,9 @@ namespace TestWPF
 
 
 #if DEBUG
-        private string SettingTablePath = "C:\\Users\\mkh2022\\Desktop\\설정.xlsx";
+        private string SettingTablePath = "C:\\Users\\mkh2022\\Desktop\\" + Utility.GetOnlyFileName(MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.ProjectName)) + ".xlsx";
 #else
-        private string SettingTablePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "Data\\Table\\설정.xlsx");
+        private string SettingTablePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "Data\\Table", ConfigUtility.ProjectName + ".xlsx");
 #endif
 
         string[] EditorFileNames = {
@@ -83,6 +79,7 @@ namespace TestWPF
             Excel.Workbook workBook = null;
             Excel.Worksheet workSheet = null;
 
+            /*
             // 매크로
             if (EditorPannelExcelLoader.GetWorkBookAndSheetFromTable(SettingTablePath, out workBook, out workSheet, "매크로", true))
             {
@@ -140,6 +137,8 @@ namespace TestWPF
             Marshal.ReleaseComObject(workBook);
             Marshal.ReleaseComObject(workSheet);
             EditorPannelExcelLoader.DestroyExcelApp();
+
+            */
         }
 
         public void CheckUpdate(object sender, System.EventArgs e)

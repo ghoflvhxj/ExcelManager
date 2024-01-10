@@ -30,7 +30,7 @@ namespace TestWPF
         public void BindTable(GameDataTable newTable)
         {
             table = newTable;
-            foreach(ColumnHeader columnHeader in table.ColumnHeaders)
+            foreach(AnvilColumnHeader columnHeader in table.ColumnHeaders)
             {
                 if(columnHeader == table.IndexColumn)
                 {

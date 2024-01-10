@@ -39,17 +39,13 @@ namespace TestWPF
         //    }
         //}
 
-        public static void LoadMetaData()
+        public static void LoadCachedData()
         {
-#if DEBUG
-            LoadMetaData(ConfigUtility.SavedFilePath);
-#else
-            LoadMetaData(ConfigUtility.SavedFileName);
-#endif
+            LoadCachedData(ConfigUtility.CachedDataPath);
             BookmarkLoadFromSaveFile(ConfigUtility.BookmarkFileName);
         }
 
-        public static void LoadMetaData(string filePath)
+        public static void LoadCachedData(string filePath)
         {
             if (File.Exists(filePath))
             {
@@ -76,12 +72,7 @@ namespace TestWPF
 
         public static void SaveMetaData()
         {
-#if (DEBUG)
-            SaveMetaData(ConfigUtility.SavedFilePath);
-#else
-            SaveMetaData(ConfigUtility.SavedFileName);
-#endif
-            SaveBookmarkFile(ConfigUtility.BookmarkFileName);
+            SaveMetaData(ConfigUtility.CachedDataPath);
         }
 
         public static async void SaveMetaData(string filePath)

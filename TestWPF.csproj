@@ -19,23 +19,21 @@
 
   <ItemGroup>
     <None Remove="1835fddc51a538f18.gif" />
-    <None Remove="CommonControl\XLICONS.EXE" />
-    <None Remove="Data\Image\CleanUp.PNG" />
-    <None Remove="Data\Image\Excel.png" />
-    <None Remove="Data\Image\Update.PNG" />
-    <None Remove="Panels\Test2.PNG" />
+    <None Remove="Resources\Image\CleanUp.PNG" />
+    <None Remove="Resources\Image\Excel.png" />
+    <None Remove="Resources\Image\Update.PNG" />
+    <None Remove="Source\Panels\Test2.PNG" />
     <None Remove="XLICONS.EXE" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="CommonControl\XLICONS.EXE" />
-    <Resource Include="Data\Image\CleanUp.PNG">
+    <Resource Include="Resources\Image\CleanUp.PNG">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Data\Image\Excel.png">
+    <Resource Include="Resources\Image\Excel.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Data\Image\Update.PNG">
+    <Resource Include="Resources\Image\Update.PNG">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
@@ -77,7 +75,54 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Panels\TablePanel\Control\" />
+    <Folder Include="Source\Panels\TablePanel\Control\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Source\CommonControl\ItemViewer.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Source\CommonControl\MyItem.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Source\CommonControl\TestControl.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Source\Panels\EditorPanel.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Source\Panels\TablePanel\TablePanel.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Source\Panels\TableReferenceModifyPanel\Control\TableReferenceModfiyPanelItem.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Source\Panels\TableReferenceModifyPanel\TableReferenceModifyPanel.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Source\Window\CheckBoxSelector.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Source\Window\TableReferenceModifier.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Source\Window\TableViewer.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
 </Project>

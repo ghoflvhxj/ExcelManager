@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -28,7 +29,7 @@ namespace TestWPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static ConfigManager configManager = new ConfigManager();
+        public static ConfigManager configManager = new();
         public static ConcurrentDictionary<string, byte> allFileName = new();
         public static ConcurrentDictionary<string, string> allFileNameAsKey = new();
         public static ConcurrentDictionary<string, byte> allDirectoryName = new();
@@ -69,17 +70,11 @@ namespace TestWPF
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            LogTextBox.AppendText(string.Join("\r\n", logQueue));
+            BuildColumnHeader();
 
-#if (!DEBUG)
-            DevelopPanel.Visibility = Visibility.Collapsed;
-#endif
-
-            string gamePath = configManager.GetSectionElementValue(ConfigManager.ESectionType.GamePath);
-            if (gamePath != "")
+            if (CheckConfig(false))
             {
-                TravelContentDirectories(gamePath, false);
-
+                TravelContentDirectories();
                 MyEditorPannel.DelayCheckUpdate();
             }
             else
@@ -89,6 +84,21 @@ namespace TestWPF
                     SelectProjectFileAndTravel();
                 }
             }
+
+            LogTextBox.AppendText(string.Join("\r\n", logQueue));
+#if (!DEBUG)
+            DevelopPanel.Visibility = Visibility.Collapsed;
+#endif
+        }
+
+        public List<ColumnDescsription> ColumnDescsriptions { get; set; }
+        public void BuildColumnHeader()
+        {
+            string ColumnHeaderDescriptData = File.ReadAllText(@"C:\Users\mkh2022\Desktop\TestJsonData.json");
+
+            LogTextBox.AppendText(ColumnHeaderDescriptData);
+
+            ColumnDescsriptions = JsonSerializer.Deserialize<List<ColumnDescsription>>(ColumnHeaderDescriptData);
         }
 
         private void SelectProjectFileAndTravel()
@@ -99,7 +109,7 @@ namespace TestWPF
             {
                 string gamePath = System.IO.Path.GetDirectoryName(dlg.FileName);
                 configManager.AddSectionElement(ConfigManager.ESectionType.ProjectName, Path.GetFileName(dlg.FileName), true);
-                TravelContentDirectories(gamePath, true);
+                CheckConfig(true);
             }
             else
             {
@@ -108,61 +118,56 @@ namespace TestWPF
             }
         }
 
-        private bool TravelContentDirectories(string gamePath, bool bSetConfig)
+        private bool CheckConfig(bool bUpdateConfig)
         {
-            Dictionary<ConfigManager.ESectionType, string> ConfigPathMap = new();
-            ConfigPathMap.Add(ConfigManager.ESectionType.GamePath, gamePath);
-            ConfigPathMap.Add(ConfigManager.ESectionType.ContentPath, configManager.GetSectionElementValue(ConfigManager.ESectionType.ContentPath));
-            ConfigPathMap.Add(ConfigManager.ESectionType.EnginePath, configManager.GetSectionElementValue(ConfigManager.ESectionType.EnginePath));
+            string gamePath = configManager.GetSectionElementValue(ConfigManager.ESectionType.GamePath);
+            GlobalValue.GamePath = gamePath;
 
-            if (bSetConfig)
+            Dictionary<ConfigManager.ESectionType, string> configMap = new();
+            configMap.Add(ConfigManager.ESectionType.GamePath, gamePath);
+            configMap.Add(ConfigManager.ESectionType.ContentPath, configManager.GetSectionElementValue(ConfigManager.ESectionType.ContentPath));
+            configMap.Add(ConfigManager.ESectionType.EnginePath, configManager.GetSectionElementValue(ConfigManager.ESectionType.EnginePath));
+
+            if (bUpdateConfig)
             {
-                ConfigPathMap[ConfigManager.ESectionType.ContentPath] = Path.Combine(gamePath, "Content");
-                ConfigPathMap[ConfigManager.ESectionType.EnginePath] = Path.Combine(Directory.GetParent(gamePath).FullName, "Engine");
+                configMap[ConfigManager.ESectionType.ContentPath] = Path.Combine(gamePath, "Content");
+                configMap[ConfigManager.ESectionType.EnginePath] = Path.Combine(Directory.GetParent(gamePath).FullName, "Engine");
+
+                configManager.AddSectionElement(ConfigManager.ESectionType.GamePath, gamePath, true);
+                configManager.AddSectionElement(ConfigManager.ESectionType.ContentPath, configMap[ConfigManager.ESectionType.ContentPath], true);
+                configManager.AddSectionElement(ConfigManager.ESectionType.EnginePath, configMap[ConfigManager.ESectionType.EnginePath], true);
             }
 
-            Dictionary<string, string> notExistPathList = new();
-            string detail = "";
-            foreach (var PathPair in ConfigPathMap)
+            Dictionary<string, string> invalidPathMap = new();
+            foreach (var PathPair in configMap)
             {
-                if(Directory.Exists(PathPair.Value) == false)
+                if (Directory.Exists(PathPair.Value))
                 {
-                    string enumString = Enum.GetName(typeof(ConfigManager.ESectionType), PathPair.Key);
-                    string[] splitEnumString = enumString.Split("Path");
-                    if(splitEnumString.Length > 0)
-                    {
-                        string folderName = splitEnumString[0];
-                        notExistPathList.Add(folderName, PathPair.Value);
-                        detail += folderName + ": " + PathPair.Value + "\r\n";
-                    }
+                    continue;
                 }
+
+                invalidPathMap.Add(Utility.EnumAsString(PathPair.Key), PathPair.Value);
             }
 
-            if(notExistPathList.Count > 0)
+            if (invalidPathMap.Count > 0)
             {
-                MessageBox.Show(string.Join(", ", notExistPathList.Keys) + " 폴더를 찾을 수 없습니다.\r\n" + detail);
-                LogTextBox.AppendText(string.Join(", ", notExistPathList.Keys) + " 폴더를 찾을 수 없습니다.");
-                LogTextBox.AppendText(detail);
+                LogTextBox.AppendText(string.Join(", ", invalidPathMap.Keys) + "에 설정된 경로가 유효하지 않습니다.");
                 return false;
             }
 
-            GlobalValue.GamePath = gamePath;
-            if (bSetConfig)
-            {
-                configManager.AddSectionElement(ConfigManager.ESectionType.GamePath, gamePath, true);
-                configManager.AddSectionElement(ConfigManager.ESectionType.ContentPath, ConfigPathMap[ConfigManager.ESectionType.ContentPath], true);
-                configManager.AddSectionElement(ConfigManager.ESectionType.EnginePath, ConfigPathMap[ConfigManager.ESectionType.EnginePath], true);
-            }
+            Utility.Log("Config 확인 완료.", Utility.LogType.Message);
+            return true;
+        }
 
-            Utility.Log("경로 설정 완료.", Utility.LogType.Message);
-
+        private bool TravelContentDirectories()
+        {
             travelThread = new Thread(delegate ()
             {
-                MExcel.LoadMetaData();
+                MExcel.LoadCachedData();
 
                 allFileName = new();
                 ConcurrentQueue<string> searchQueue = new ConcurrentQueue<string>();
-                searchQueue.Enqueue(ConfigPathMap[ConfigManager.ESectionType.ContentPath]);
+                searchQueue.Enqueue(configManager.GetSectionElementValue(ConfigManager.ESectionType.ContentPath));
                 while (searchQueue.Count != 0)
                 {
                     string currentDirectory;
@@ -246,13 +251,14 @@ namespace TestWPF
                 foreach (var excelPath in MExcel.excelPaths)
                 {
                     GameDataTable gameDataTable = MExcel.TableMap[excelPath];
-                    gameDataTable.UpdateModifiedProperty(out _);
+                    gameDataTable.Load(((App)Application.Current).ExcelLoader);
+                    //gameDataTable.UpdateModifiedProperty(out _);
                 }
 
-                Dispatcher.BeginInvoke((Action)(() => 
-                {
-                    MyTablePanel.UpdateInfoUI();
-                }));
+                //Dispatcher.BeginInvoke((Action)(() => 
+                //{
+                //    MyTablePanel.UpdateInfoUI();
+                //}));
 
                 Utility.Log("엑셀 읽기 완료", Utility.LogType.Message);
             });
@@ -270,7 +276,7 @@ namespace TestWPF
         {
             foreach (var excelPath in MExcel.excelPaths)
             {
-                MExcel.TableMap[excelPath].LoadLatest(((App)Application.Current).ExcelLoader, excelPath, true);
+                //MExcel.TableMap[excelPath].Load(((App)Application.Current).ExcelLoader, excelPath, true);
             }
 
             //mExcel.DestroyExcelApp();

@@ -20,7 +20,7 @@ namespace TestWPF
         private const int Index = 1;
 
         // 파일 정보
-        public DateTime LastWriteTimeAtLoadTime { get; set; }
+        public DateTime CachedLastWriteTime { get; set; }
         public string FilePath { get; set; }
 
         // 테이블 데이터
@@ -31,18 +31,18 @@ namespace TestWPF
         public object[,] DataArray { get; set; }
 
         // 테이블 정보
-        public List<ColumnHeader> ColumnHeaders { get; set; }
-        public List<KeyValuePair<EResourcePathType, ColumnHeader>> ResourceColums { get; set; }
+        public List<AnvilColumnHeader> ColumnHeaders { get; set; }
+        public List<KeyValuePair<EResourcePathType, AnvilColumnHeader>> ResourceColums { get; set; }
         public Dictionary<int, int> RecordIndexToDataArrayIndex { get; set; }
         public Dictionary<string, ForeignKeyInfo> ForeignKeyInfoMap { get; set; }
-        public List<ColumnHeader> CommentColumns { get; set; }
-        public ColumnHeader IndexColumn { get; set; }
+        public List<AnvilColumnHeader> CommentColumns { get; set; }
+        public AnvilColumnHeader IndexColumn { get; set; }
 
         // 메타
         [JsonIgnore]
         public HashSet<string> ReferencedTableNames { get; set; }
         [JsonIgnore]
-        public Dictionary<string, ColumnHeader> ColumnNameToColumnHeader;
+        public Dictionary<string, AnvilColumnHeader> ColumnNameToColumnHeader;
 
         [JsonIgnore]
         public bool Modified { get; set; }
@@ -67,61 +67,49 @@ namespace TestWPF
         public void ResetMetaInfo()
         {
             ReferencedTableNames = new HashSet<string>();
-            ColumnNameToColumnHeader = new Dictionary<string, ColumnHeader>(StringComparer.OrdinalIgnoreCase);
+            ColumnNameToColumnHeader = new Dictionary<string, AnvilColumnHeader>(StringComparer.OrdinalIgnoreCase);
         }
 
-
-        public void UpdateModifiedProperty(out DateTime outLastWriteTime)
+        public void GetLastWriteTime(out DateTime outLastWriteTime)
         {
-            if (File.Exists(FilePath))
-            {
-                FileInfo fileInfo = new FileInfo(FilePath);
-                if (LastWriteTimeAtLoadTime != fileInfo.LastWriteTime)
-                {
-                    bIsModified = true;
-                    outLastWriteTime = fileInfo.LastWriteTime;
+            outLastWriteTime = DateTime.MinValue;
 
-                }
-                else
-                {
-                    outLastWriteTime = DateTime.MinValue;
-                    bIsModified = false;
-                }
-            }
-            else
+            if (File.Exists(FilePath) == false)
             {
-                outLastWriteTime = DateTime.MinValue;
                 Utility.Log(FilePath + " 존재하지 않는 파일입니다", Utility.LogType.Warning);
+                return;
             }
+
+            FileInfo fileInfo = new FileInfo(FilePath);
+            outLastWriteTime = fileInfo.LastWriteTime;
         }
 
-        public bool LoadLatest(MExcel mExcel, string excelFilePath, bool bForce = false)
-        {
-            Utility.Log(excelFilePath + "로드 시작");
-            if (File.Exists(excelFilePath) == false)
-            {
-                Utility.Log(excelFilePath + " 로드 실패", Utility.LogType.Warning);
-                return false;
-            }
+        //public bool Load(MExcel mExcel, string excelFilePath, bool bForce = false)
+        //{
+        //    Utility.Log(excelFilePath + "로드 시작");
+        //    if (File.Exists(excelFilePath) == false)
+        //    {
+        //        Utility.Log(excelFilePath + " 로드 실패", Utility.LogType.Warning);
+        //        return false;
+        //    }
 
-            FilePath = excelFilePath;
-            DateTime lastWriteTime = DateTime.MinValue;
-            UpdateModifiedProperty(out lastWriteTime);
-            if (bIsModified || bForce)
-            {
-                if (LoadGameDataTable(mExcel))
-                {
-                    Utility.Log(excelFilePath + " 데이터 읽음"); 
-                    LastWriteTimeAtLoadTime = lastWriteTime;
-                    bIsModified = false;
-                }
-            }
+        //    FilePath = excelFilePath;
+        //    DateTime lastWriteTime = DateTime.MinValue;
+        //    GetLastWriteTime(out lastWriteTime);
+        //    if (lastWriteTime != CachedLastWriteTime || bForce)
+        //    {
+        //        if (LoadGameDataTable(mExcel))
+        //        {
+        //            Utility.Log(excelFilePath + " 데이터 읽음"); 
+        //            CachedLastWriteTime = lastWriteTime;
+        //        }
+        //    }
 
-            Utility.Log(excelFilePath + " 로드 완료", Utility.LogType.Message);
-            return true;
-        }
+        //    Utility.Log(excelFilePath + " 로드 완료", Utility.LogType.Message);
+        //    return true;
+        //}
 
-        public bool LoadLatest(MExcel mExcel, bool bForce = false)
+        public bool Load(MExcel mExcel, bool bForce = false)
         {
             Utility.Log(FilePath + "로드 시작");
             if (File.Exists(FilePath) == false)
@@ -131,15 +119,14 @@ namespace TestWPF
             }
 
             DateTime lastWriteTime = DateTime.MinValue;
-            UpdateModifiedProperty(out lastWriteTime);
+            GetLastWriteTime(out lastWriteTime);
 
-            if (bIsModified || bForce)
+            if (lastWriteTime != CachedLastWriteTime || bForce)
             {
                 if (LoadGameDataTable(mExcel))
                 {
                     Utility.Log(FilePath + " 데이터 읽음");
-                    LastWriteTimeAtLoadTime = lastWriteTime;
-                    bIsModified = false;
+                    CachedLastWriteTime = lastWriteTime;
                 }
             }
 
@@ -191,7 +178,7 @@ namespace TestWPF
             MakeInfo();
         }
 
-        public void MakeInfo()
+        public virtual void MakeInfo()
         {
             if(DataArray == null)
             {
@@ -204,108 +191,9 @@ namespace TestWPF
         }
 
         // 칼럼을 분석해 정보를 만듭니다.
-        public void MakeColumnHeaders()
+        public virtual void MakeColumnHeaders()
         {
-            if (bIsModified == false)
-            {
-                return;
-            }
 
-            // 칼럼 분석
-            List<ColumnHeader> newColumnHeaders = new List<ColumnHeader>();
-            for (int col = 1; col <= ColumnCount; ++col)
-            {
-                List<string> columnHeaderAsString = new List<string>((int)EColumnHeaderElement.Count);
-                for (int row = 0; row < (int)EColumnHeaderElement.Count; ++row)
-                {
-                    object cellObject = DataArray[row + 1, col];
-                    columnHeaderAsString.Add(cellObject != null ? cellObject.ToString() : "");
-                }
-
-                if (IsInvalidColumn(columnHeaderAsString))
-                {
-                    break;
-                }
-
-                ColumnHeader newColumnHeader = new();
-                StringToColumnHeader(ref columnHeaderAsString, newColumnHeader, col);
-
-                bool bColumnUsedInGame = newColumnHeader.MachineType != EMachineType.None;
-                if (bColumnUsedInGame)
-                {
-                    if (IsContainForeignKeyToken(columnHeaderAsString[(int)EColumnHeaderElement.Name]))
-                    {
-                        string columnName = columnHeaderAsString[(int)EColumnHeaderElement.Name].Remove(0, 1);
-                        int underbarIndex = columnName.LastIndexOf('_');
-                        string tableName = columnName;
-                        if(underbarIndex != -1)
-                        {
-                            tableName = columnName.Substring(0, underbarIndex);
-                        }
-
-                        bool bFoundRealTable = false;
-                        string realTableName = tableName;
-                        foreach (string excelFileName in MExcel.excelFileNames)
-                        {
-                            if((tableName == excelFileName) || (tableName.Contains(excelFileName) && !bFoundRealTable) || (excelFileName.Contains(tableName) && !bFoundRealTable))
-                            {
-                                bFoundRealTable = true;
-                                realTableName = excelFileName;
-                                break;
-                            }
-                        }
-
-                        if(ForeignKeyInfoMap.ContainsKey(newColumnHeader.Name) == false)
-                        {
-                            ForeignKeyInfoMap.Add(newColumnHeader.Name, new ForeignKeyInfo(){
-                                ReferencedTableName = realTableName,
-                                ForeignKeyName = "index"
-                            });
-                        }
-                        //newColumnHeader.ReferencedTableName = realTableName;
-                        //newColumnHeader.ForeignKeyName = "index";
-                    }
-                    else if (newColumnHeader.DataType == EDataType.Enum)
-                    {
-                        newColumnHeader.EnumName = columnHeaderAsString[(int)EColumnHeaderElement.StructType];
-                    }
-
-                    newColumnHeaders.Add(newColumnHeader);
-
-                    if (newColumnHeader.Name.ToLower() == "index")
-                    {
-                        IndexColumn = newColumnHeader;
-                    }
-                }
-                else
-                {
-                    if (newColumnHeader.Name.ToLower().Contains("comment"))
-                    {
-                        CommentColumns.Add(newColumnHeader);
-                    }
-                }
-            }
-
-            // 레코드 인덱스와 배열 인덱스 바인딩
-            Dictionary<int, int> newIndexToDataArrayRow = new Dictionary<int, int>();
-            for (int row = (int)EColumnHeaderElement.Count + 1; row <= RowCount; ++row)
-            {
-                if (IndexColumn.ColumnIndex == 0)
-                {
-                    continue;
-                }
-
-                if (DataArray[row, IndexColumn.ColumnIndex] == null)
-                {
-                    continue;
-                }
-
-                newIndexToDataArrayRow.TryAdd(Convert.ToInt32(DataArray[row, IndexColumn.ColumnIndex]), row);
-            }
-            RecordIndexToDataArrayIndex = newIndexToDataArrayRow;
-
-            ColumnHeaders = newColumnHeaders;
-            bIsModified = false;
         }
 
         public void PostInitInfo()
@@ -325,13 +213,19 @@ namespace TestWPF
             }
         }
 
-        private void StringToColumnHeader(ref List<string> columnHeaderAsString, ColumnHeader columnHeader, int col)
+        protected void StringToColumnHeader(ref List<string> columnHeaderAsString, AnvilColumnHeader columnHeader, int col)
         {
             columnHeader.Name = Convert.ToString(columnHeaderAsString[(int)EColumnHeaderElement.Name]);
             columnHeader.MachineType = 0;
             columnHeader.DataType = 0;
             columnHeader.StructType = 0;
             columnHeader.ColumnIndex = col;
+
+            object a = new();
+            if((EMachineType)a  == EMachineType.None)
+            {
+
+            }
 
             string machineType = columnHeaderAsString[(int)EColumnHeaderElement.MachineType].ToLower();
             for (int i = 0; i < (int)EMachineType.Count; ++i)
@@ -374,7 +268,7 @@ namespace TestWPF
                 int col = columnHeader.ColumnIndex;
 
                 // 헤더 검사
-                if ((columnHeader.MachineType == EMachineType.Client || columnHeader.MachineType == EMachineType.All) &&
+                if (columnHeader.MachineType != EMachineType.Server &&
                     columnHeader.DataType == EDataType.String &&
                     columnHeader.StructType == EStructType.None)
                 {
@@ -406,7 +300,7 @@ namespace TestWPF
 
                     if (bResourceString)
                     {
-                        ResourceColums.Add(new KeyValuePair<EResourcePathType, ColumnHeader>(resourcePathType, columnHeader));
+                        ResourceColums.Add(new KeyValuePair<EResourcePathType, AnvilColumnHeader>(resourcePathType, columnHeader));
                     }
                 }
                 else
@@ -436,7 +330,7 @@ namespace TestWPF
                 }
 
                 // 데이터가 없으면 강제 로드, 있어도 최신이 아니면 로드 됨
-                if (enumTable.LoadLatest(((App)App.Current).ExcelLoader, enumTable.DataArray == null) == false)
+                if (enumTable.Load(((App)App.Current).ExcelLoader, enumTable.DataArray == null) == false)
                 {
                     Utility.Log(Utility.GetOnlyFileName(enumTable.FilePath) + " 로드에 실패해 바이너리 생성을 취소합니다", Utility.LogType.Warning);
                     return;
@@ -476,7 +370,7 @@ namespace TestWPF
                         continue;
                     }
 
-                    if(table.LoadLatest(((App)App.Current).ExcelLoader, table.DataArray == null))
+                    if(table.Load(((App)App.Current).ExcelLoader, table.DataArray == null))
                     {
                         LoadedGameDataTables.Add(table);
                     }
@@ -793,10 +687,10 @@ namespace TestWPF
 
         public bool IsTableChanged(DateTime LastWriteTime)
         {
-            return LastWriteTime != LastWriteTimeAtLoadTime;
+            return LastWriteTime != CachedLastWriteTime;
         }
 
-        private void GetDataCheckMessage(ref string data, ref string dataCheckMessage, ColumnHeader columnHeader, int row, string defaultValue)
+        private void GetDataCheckMessage(ref string data, ref string dataCheckMessage, AnvilColumnHeader columnHeader, int row, string defaultValue)
         {
             dataCheckMessage += "[" + row + ", " + columnHeader.Name + "] 의 " + " 데이터(" + data + ")와 타입(" + Enum.GetName(typeof(EDataType), columnHeader.DataType) + ")이 다릅니다.\r\n";
         }
@@ -837,7 +731,7 @@ namespace TestWPF
             return IsValidColumnName(columnName) && ForeignKeyInfoMap.ContainsKey(columnName);
         }
 
-        private bool IsInvalidColumn(List<string> columnHeaderAsString)
+        protected bool IsInvalidColumn(List<string> columnHeaderAsString)
         {
             if(columnHeaderAsString[(int)EColumnHeaderElement.Name] == "")
             {
@@ -847,7 +741,7 @@ namespace TestWPF
             return false;
         }
 
-        private bool IsContainForeignKeyToken(string str)
+        protected bool IsContainForeignKeyToken(string str)
         {
             return str[0] == '@';
         }
@@ -864,7 +758,7 @@ namespace TestWPF
 
         public void FixResourceData()
         {
-            LoadLatest(((App)App.Current).ExcelLoader, DataArray == null);
+            Load(((App)App.Current).ExcelLoader, DataArray == null);
 
             const int maxWorkers = 4;
             ThreadPool.SetMinThreads(1, 1);

@@ -67,7 +67,7 @@ namespace TestWPF
             }
 
             MExcel mExcel = new MExcel(true);
-            table.LoadLatest(mExcel);
+            table.Load(mExcel);
             if (table.DataArray == null)
             {
                 table.LoadGameDataTable(mExcel);
@@ -83,7 +83,7 @@ namespace TestWPF
                     continue;
                 }
 
-                referencedTable.LoadLatest(mExcel);
+                referencedTable.Load(mExcel);
                 if (referencedTable.DataArray == null)
                 {
                     referencedTable.LoadGameDataTable(mExcel);
@@ -121,13 +121,13 @@ namespace TestWPF
                 return;
             }
 
-            List<ColumnHeader> IndexExclusiveColumnHeaders = table.ColumnHeaders.ToList();
+            List<AnvilColumnHeader> IndexExclusiveColumnHeaders = table.ColumnHeaders.ToList();
             IndexExclusiveColumnHeaders.Remove(table.IndexColumn);
 
             MyDataGrid.ItemsSource = null;
             wrongBindPosition = new();
 
-            ColumnHeader CommentColumn = table.CommentColumns.ElementAtOrDefault(CommentComboBox.SelectedIndex);
+            AnvilColumnHeader CommentColumn = table.CommentColumns.ElementAtOrDefault(CommentComboBox.SelectedIndex);
 
             // 칼럼 추가
             MyDataTable = new DataTable();
@@ -189,7 +189,7 @@ namespace TestWPF
                         continue;
                     }
 
-                    ColumnHeader referencedTableCommentColumn = referencedTable.CommentColumns.ElementAtOrDefault(0);
+                    AnvilColumnHeader referencedTableCommentColumn = referencedTable.CommentColumns.ElementAtOrDefault(0);
                     if (foreignKeyInfo.ReferencedTableName.ToLower() == MExcel.StringTableName)
                     {
                         referencedTableCommentColumn = referencedTable.ColumnHeaders[1];
@@ -686,7 +686,7 @@ namespace TestWPF
                 foreach(var selectedCell in MyDataGrid.SelectedCells)
                 {
                     int dataGridRowIndex = MyDataGrid.Items.IndexOf(selectedCell.Item);
-                    ColumnHeader columnHeader = table.ColumnNameToColumnHeader[columnName];
+                    AnvilColumnHeader columnHeader = table.ColumnNameToColumnHeader[columnName];
 
                     object selectedData = table.DataArray[(int)EColumnHeaderElement.Count + 1 + dataGridRowIndex, columnHeader.ColumnIndex];
                     if (selectedData == null)
@@ -718,7 +718,7 @@ namespace TestWPF
                             return;
                         }
 
-                        ColumnHeader referencedColumnHeader = referencedTable.ColumnNameToColumnHeader[foreignKeyInfo.ForeignKeyName];
+                        AnvilColumnHeader referencedColumnHeader = referencedTable.ColumnNameToColumnHeader[foreignKeyInfo.ForeignKeyName];
                         for (int i = (int)EColumnHeaderElement.Count + 1; i < referencedTable.RowCount; ++i)
                         {
                             object referencedTableData = referencedTable.DataArray[i, referencedColumnHeader.ColumnIndex];

@@ -1,79 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
+  <ItemGroup />
   <ItemGroup>
-    <ApplicationDefinition Update="App.xaml">
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
+    <Compile Update="Source\CommonControl\ItemViewer.xaml.cs" />
+    <Compile Update="Source\CommonControl\TestControl.xaml.cs" />
+    <Compile Update="Source\Panels\EditorPanel.xaml.cs" />
+    <Compile Update="Source\Panels\TablePanel\TablePanel.xaml.cs" />
+    <Compile Update="Source\CommonControl\MyItem.xaml.cs" />
+    <Compile Update="Source\Panels\TableReferenceModifyPanel\Control\TableReferenceModfiyPanelItem.xaml.cs" />
+    <Compile Update="Source\Panels\TableReferenceModifyPanel\TableReferenceModifyPanel.xaml.cs" />
+    <Compile Update="Source\Window\CheckBoxSelector.xaml.cs" />
+    <Compile Update="Source\Window\TableReferenceModifier.xaml.cs" />
+    <Compile Update="Source\Window\TableViewer.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="CommonControl\ItemViewer.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="CommonControl\TestControl.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Panels\EditorPanel.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Panels\TablePanel\TablePanel.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="CommonControl\MyItem.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Panels\TableReferenceModifyPanel\Control\TableReferenceModfiyPanelItem.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Panels\TableReferenceModifyPanel\TableReferenceModifyPanel.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Window\CheckBoxSelector.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Window\TableReferenceModifier.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Window\TableViewer.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="CommonControl\ItemViewer.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="CommonControl\TestControl.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="MainWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Panels\EditorPanel.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Panels\TablePanel\TablePanel.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="CommonControl\MyItem.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Panels\TableReferenceModifyPanel\Control\TableReferenceModfiyPanelItem.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Panels\TableReferenceModifyPanel\TableReferenceModifyPanel.xaml">
-      <SubType>Designer</SubType>
-    </Page>
+    <Page Update="Source\CommonControl\ItemViewer.xaml" />
+    <Page Update="Source\CommonControl\TestControl.xaml" />
+    <Page Update="Source\Panels\EditorPanel.xaml" />
+    <Page Update="Source\Panels\TablePanel\TablePanel.xaml" />
+    <Page Update="Source\CommonControl\MyItem.xaml" />
+    <Page Update="Source\Panels\TableReferenceModifyPanel\Control\TableReferenceModfiyPanelItem.xaml" />
+    <Page Update="Source\Panels\TableReferenceModifyPanel\TableReferenceModifyPanel.xaml" />
     <Page Update="Themes\Generic.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Window\CheckBoxSelector.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Window\TableReferenceModifier.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Window\TableViewer.xaml">
-      <SubType>Designer</SubType>
-    </Page>
+    <Page Update="Source\Window\CheckBoxSelector.xaml" />
+    <Page Update="Source\Window\TableReferenceModifier.xaml" />
+    <Page Update="Source\Window\TableViewer.xaml" />
   </ItemGroup>
 </Project>

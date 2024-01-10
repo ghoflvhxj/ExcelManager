@@ -27,6 +27,11 @@ namespace TestWPF
             return Map[key];
         }
 
+        public static string EnumAsString<T>(T value)
+        {
+            return Enum.GetName(typeof(T), value);
+        }
+
         public static string NameAsKey(string name)
         {
             return name.ToLower();

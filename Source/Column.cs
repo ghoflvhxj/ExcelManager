@@ -6,6 +6,18 @@ using System.Threading.Tasks;
 
 namespace TestWPF
 {
+    public class ColumnElementDescription
+    {
+        public string Name { get; set; }
+        public int Index { get; set; }
+    }
+
+    public class ColumnDescsription
+    {
+        public List<string> TargetProjectName { get; set; }
+        public List<ColumnElementDescription> Elements { get; set; }
+    }
+
     public enum EDataType
     {
         None,
@@ -36,13 +48,11 @@ namespace TestWPF
         Array,
         Count
     }
-
     public enum EResourcePathType 
     { 
         FileName, 
         Path 
     };
-
     enum EColumnHeaderElement
     {
         Name,
@@ -52,17 +62,21 @@ namespace TestWPF
         Count
     };
 
-    public class ColumnHeader
+    public class BaseColumnHeader
     {
         public int ColumnIndex { set; get; }
+        public string Name { set; get; }
+    }
+
+    public class AnvilColumnHeader : BaseColumnHeader
+    {
         public string EnumName { set; get; }
 
-        public string Name { set; get; }
         public EDataType DataType { set; get; }
         public EMachineType MachineType { set; get; }
         public EStructType StructType { set; get; }
 
-        public ColumnHeader()
+        public AnvilColumnHeader()
         {
 
         }
@@ -71,10 +85,10 @@ namespace TestWPF
         {
             string str = "";
 
-            str += Enum.GetName(typeof(EColumnHeaderElement), (int)EColumnHeaderElement.Name) + ": " + Name + ", ";
-            str += Enum.GetName(typeof(EColumnHeaderElement), (int)EColumnHeaderElement.MachineType) + ": " + Enum.GetName(typeof(EMachineType), (int)MachineType) + ", ";
-            str += Enum.GetName(typeof(EColumnHeaderElement), (int)EColumnHeaderElement.DataType) + ": " + Enum.GetName(typeof(EDataType), (int)DataType) + ", ";
-            str += Enum.GetName(typeof(EColumnHeaderElement), (int)EColumnHeaderElement.StructType) + ": " + Enum.GetName(typeof(EStructType), (int)StructType) + ", ";
+            //str += Enum.GetName(typeof(EColumnHeaderElement), (int)EColumnHeaderElement.Name) + ": " + Name + ", ";
+            //str += Enum.GetName(typeof(EColumnHeaderElement), (int)EColumnHeaderElement.MachineType) + ": " + Enum.GetName(typeof(EMachineType), (int)MachineType) + ", ";
+            //str += Enum.GetName(typeof(EColumnHeaderElement), (int)EColumnHeaderElement.DataType) + ": " + Enum.GetName(typeof(EDataType), (int)DataType) + ", ";
+            //str += Enum.GetName(typeof(EColumnHeaderElement), (int)EColumnHeaderElement.StructType) + ": " + Enum.GetName(typeof(EStructType), (int)StructType) + ", ";
 
             return str;
         }

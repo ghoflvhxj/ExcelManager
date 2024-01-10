@@ -435,7 +435,7 @@ namespace TestWPF
             foreach (var pathToTablePair in MExcel.TableMap)
             {
                 GameDataTable gameDataTable = pathToTablePair.Value;
-                gameDataTable.UpdateModifiedProperty(out _);
+                gameDataTable.GetLastWriteTime(out _);
                 if (gameDataTable.bIsModified == true)
                 {
                     dirtyTableNames.Add(Utility.GetOnlyFileName(pathToTablePair.Key));
