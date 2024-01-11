@@ -46,8 +46,6 @@ namespace TestWPF
 
         [JsonIgnore]
         public bool Modified { get; set; }
-        [JsonIgnore]
-        public bool bIsModified { get; set; }
 
         public GameDataTable()
         {

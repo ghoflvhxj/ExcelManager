@@ -8,14 +8,6 @@
              d:DesignHeight="450" d:DesignWidth="800" KeyDown="UserControl_KeyDown">
     <Grid x:Name="test">
         <StackPanel>
-            <StackPanel x:Name="A" Grid.Row="0" VerticalAlignment="Top">
-                <StackPanel x:Name="ItemViewerHead" Orientation="Horizontal" Background="Gray" VerticalAlignment="Top" MouseLeftButtonDown="Label_MouseLeftButtonDown" MouseMove="ItemViewerHead_MouseMove" MouseLeave="Label_MouseLeave">
-                    <d:Label VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Content="아이템 뷰어"/>
-                    <Label VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Content="{Binding Path=Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"/> 
-                    <Rectangle Width="2" Fill="#FF444444" VerticalAlignment="Center" HorizontalAlignment="Stretch" Height="20"></Rectangle>
-                    <StackPanel x:Name="MenuPanel" Orientation="Horizontal"/>
-                </StackPanel>
-            </StackPanel>
             <ScrollViewer x:Name="ScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto" VerticalAlignment="Top">
                 <ScrollViewer.RenderTransform>
                     <ScaleTransform x:Name="ItemListPanelScaleTransform" ScaleX="1" ScaleY="1"></ScaleTransform>

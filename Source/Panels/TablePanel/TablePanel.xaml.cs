@@ -45,26 +45,26 @@ namespace TestWPF
                     SelectBookmarkList("Default");
 
                     // 스크롤 뷰 높이 업데이트
-                    AllTableViewer.UpdateScrollViewerHeight();
+                    TableItemViewer.UpdateScrollViewerHeight();
                 };
 
                 mainWindow.StateChanged += new EventHandler((object sender, EventArgs e) =>
                 {
-                    AllTableViewer.UpdateScrollViewerHeight();
+                    TableItemViewer.UpdateScrollViewerHeight();
                 });
 
                 mainWindow.SizeChanged += new SizeChangedEventHandler((object sender, SizeChangedEventArgs e) =>
                 {
-                    AllTableViewer.UpdateScrollViewerHeight();
+                    TableItemViewer.UpdateScrollViewerHeight();
                 });
             }
 
-            focusedItemViewr = AllTableViewer;
+            focusedItemViewr = TableItemViewer;
         }
 
         public void UpdateInfoUI()
         {
-            foreach (var Item in AllTableViewer.ItemListWrapPanel.Children)
+            foreach (var Item in TableItemViewer.ItemListWrapPanel.Children)
             {
                 MyItem MyItemInstance = Item as MyItem;
                 if (MyItemInstance != null)
@@ -85,55 +85,6 @@ namespace TestWPF
                     MExcel.TableMap.TryAdd(excelPath, new GameDataTable());
                 }
             }
-
-            // 북마크 버튼
-            string NewBookmarklistName = "새로운 즐겨찾기";
-            int NewBookmarkNum = 1;
-            Button btn = new Button();
-            btn.Content = "+";
-            btn.Click += new RoutedEventHandler((object sender, RoutedEventArgs e) =>
-            {
-                while(true)
-                {
-                    if(MExcel.BookMarkMap.ContainsKey(NewBookmarklistName) == false)
-                    {
-                        break;
-                    }
-
-                    NewBookmarklistName = "새로운 즐겨찾기" + NewBookmarkNum++;
-                }
-
-                AddBookmarkListTextBox(NewBookmarklistName);
-            });
-            BookMarkedTableListViewer.Children.Add(btn);
-
-            // 기본 북마크 버튼
-            foreach(var pair in MExcel.BookMarkMap)
-            {
-                AddBookmarkListTextBox(pair.Key);
-            }
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            //FindingIndexTextBox.Visibility = FindingIndexTextBox.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-            //if (FindingIndexTextBox.Visibility == Visibility.Collapsed)
-            //{
-            //    foreach (var children in AllTableViewer.Children)
-            //    {
-            //        MyItem myItem = children as MyItem;
-            //        if (myItem == null)
-            //        {
-            //            continue;
-            //        }
-
-            //        myItem.Visibility = Visibility.Visible;
-            //    }
-            //}
-            //else
-            //{
-            //    FilteringItem();
-            //}
         }
 
         public bool AddItem(MyItem myItem)
@@ -143,108 +94,13 @@ namespace TestWPF
                 return false;
             }
 
-            myItem.OnBookMarkChangedDelegate += delegate ()
-            {
-                if (myItem.BookMarked)  
-                {
-                    if (BookMarkedTableListViewer.ItemListWrapPanel.Children.Contains(myItem) == false)
-                    {
-                        BookMarkedTableListViewer.ItemListWrapPanel.Children.Add(new MyItem(myItem));
-                    }
-                }
-            };
-
-            //myItem.OnRightClicked += delegate ()
-            //{
-            //    if(SelectedItems.Contains(myItem))
-            //    {
-
-            //    }
-            //    else
-            //    {
-            //        myItem.Select();
-            //        myItem.OnSelectionChangedDelegate();
-            //    }
-            //};
-
-            if (AllTableViewer.AddItem(myItem, out _))
+            if (TableItemViewer.AddItem(myItem, out _))
             {
                 MyItemMap.Add(myItem.Path, myItem);
                 return true;
             }
 
             return false;
-        }
-
-        public void AddBookmarkListTextBox(string bookmarkListName)
-        {
-            MExcel.BookMarkMap.TryAdd(bookmarkListName, new());
-
-            TextBox btn = new TextBox();
-            btn.Text = bookmarkListName;
-            btn.VerticalAlignment = VerticalAlignment.Stretch;
-            btn.IsReadOnly = true;
-            btn.Background = new SolidColorBrush(Colors.Transparent);
-
-            btn.AddHandler(TextBox.MouseLeftButtonDownEvent, new MouseButtonEventHandler((object sender, MouseButtonEventArgs e) => {
-                SelectBookmarkList(Convert.ToString(btn.Text));
-                e.Handled = true;
-            }), true);
-            btn.LostFocus += new RoutedEventHandler((object sender, RoutedEventArgs e) =>{
-                Keyboard.ClearFocus();
-                btn.IsReadOnly = true;
-                if(MExcel.BookMarkMap.ContainsKey(bookmarkListName))
-                {
-                    if(MExcel.BookMarkMap.TryAdd(btn.Text, MExcel.BookMarkMap[bookmarkListName]))
-                    {
-                        MExcel.BookMarkMap.Remove(bookmarkListName);
-                        SelectBookmarkList(btn.Text);
-                    }
-                }
-            });
-            btn.MouseEnter += new MouseEventHandler((object sender, MouseEventArgs e) =>
-            {
-                BookMarkedTableListViewer.MouseEnteredByChild = true;
-                if(BookMarkedTableListViewer.IsHighlighted)
-                {
-                    BookMarkedTableListViewer.ToggleHighlight();
-                }
-                btn.Background = new SolidColorBrush(Colors.Chocolate);
-            });
-            btn.MouseLeave += new MouseEventHandler((object sender, MouseEventArgs e) =>
-            {
-                BookMarkedTableListViewer.MouseEnteredByChild = false;
-                btn.Background = new SolidColorBrush(Colors.Transparent);
-            });
-            btn.KeyDown += new KeyEventHandler((object sender, KeyEventArgs e)=>{
-                if(e.Key == Key.Enter)
-                {
-                    btn.RaiseEvent(new RoutedEventArgs(LostFocusEvent, btn));
-                }
-            });
-
-            ContextMenu contextMenu = new();
-            Label label1 = new();
-            label1.Content = "이름 변경";
-            label1.MouseLeftButtonDown += new MouseButtonEventHandler((object sender, MouseButtonEventArgs e) =>
-            {
-                btn.IsReadOnly = false;
-            });
-            Label label2 = new();
-            label2.Content = "삭제";
-            label2.MouseLeftButtonDown += new MouseButtonEventHandler((object sender, MouseButtonEventArgs e) =>
-            {
-                MExcel.BookMarkMap.Remove(bookmarkListName);
-                BookMarkedTableListViewer.Children.Remove(btn);
-            });
-
-            contextMenu.Items.Add(label1);
-            contextMenu.Items.Add(label2);
-            btn.ContextMenu = contextMenu;
-
-            BookMarkedTableListViewer.Children.Add(btn);
-
-            SelectBookmarkList(bookmarkListName);
         }
 
         public void SelectBookmarkList(string bookmarkName)
@@ -255,7 +111,7 @@ namespace TestWPF
             }
 
             MExcel.SelectedBookmarkListName = bookmarkName;
-            foreach (var myItemElement in AllTableViewer.ItemListWrapPanel.Children)
+            foreach (var myItemElement in TableItemViewer.ItemListWrapPanel.Children)
             {
                 MyItem myItem = myItemElement as MyItem;
                 if(myItem == null)
@@ -267,57 +123,10 @@ namespace TestWPF
             }
         }
 
-        private void FindingIndexTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            //e.Handled = reg.IsMatch(e.Text);
-        }
-
-        private void FindingIndexTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            //FilteringItem();
-        }
-
-        private void FilteringItem()
-        {
-            //if (FindingIndexTextBox.Text == null || FindingIndexTextBox.Text.Length == 0)
-            //{
-            //    return;
-            //}
-
-            //int findingIndex = Convert.ToInt32(FindingIndexTextBox.Text);
-
-            //foreach (var children in AllTableViewer.ItemListPanel.Children)
-            //{
-            //    MyItem myItem = children as MyItem;
-            //    if (myItem == null)
-            //    {
-            //        continue;
-            //    }
-
-            //    Table table = MExcel.GetTableByPath(myItem.ExcelPath);
-            //    if (table != null)
-            //    {
-            //        if(table.RecordIndexToDataArrayIndex == null)
-            //        {
-            //            myItem.Visibility = Visibility.Collapsed;
-            //            continue;
-            //        }
-
-            //        if (table.RecordIndexToDataArrayIndex.ContainsKey(findingIndex))
-            //        {
-            //            myItem.Visibility = Visibility.Visible;
-            //            continue;
-            //        }
-            //    }
-
-            //    myItem.Visibility = Visibility.Collapsed;
-            //}
-        }
-
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             bool bIsAllSelectedItemsBookmarekd = true;
-            foreach (MyItem selectedItem in AllTableViewer.SelectedItemList)
+            foreach (MyItem selectedItem in TableItemViewer.SelectedItemList)
             {
                 if (selectedItem.BookMarked == false)
                 {
@@ -326,7 +135,7 @@ namespace TestWPF
                 }
             }
 
-            foreach (MyItem selectedItem in AllTableViewer.SelectedItemList)
+            foreach (MyItem selectedItem in TableItemViewer.SelectedItemList)
             {
                 selectedItem.SetBookmark(!bIsAllSelectedItemsBookmarekd);
             }
@@ -338,7 +147,7 @@ namespace TestWPF
             t.Show();
 
             List<string> selectedTablePathList = new();
-            foreach(MyItem myItem in AllTableViewer.SelectedItemList)
+            foreach(MyItem myItem in TableItemViewer.SelectedItemList)
             {
                 selectedTablePathList.Add(myItem.Path);
             }
@@ -355,21 +164,21 @@ namespace TestWPF
 
         private void BookMarkedTableListViewer_GotFocus(object sender, RoutedEventArgs e)
         {
-            //AllTableViewer.ClearSelectedItems();
+            //TableItemViewer.ClearSelectedItems();
             //focusedItemViewr = BookMarkedTableListViewer;
         }
 
-        private void AllTableViewer_GotFocus(object sender, RoutedEventArgs e)
+        private void TableItemViewer_GotFocus(object sender, RoutedEventArgs e)
         {
             //BookMarkedTableListViewer.ClearSelectedItems();
-            //focusedItemViewr = AllTableViewer;
+            //focusedItemViewr = TableItemViewer;
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            if(AllTableViewer != null)
+            if(TableItemViewer != null)
             {
-                AllTableViewer.UpdateScrollViewerHeight();
+                TableItemViewer.UpdateScrollViewerHeight();
             }
         }
 
@@ -399,12 +208,12 @@ namespace TestWPF
 
         private void BookMarkedTableListViewer_MouseEnter(object sender, MouseEventArgs e)
         {
-            focusedItemViewr = BookMarkedTableListViewer;
+            //focusedItemViewr = BookMarkedTableListViewer;
         }
 
-        private void AllTableViewer_MouseEnter(object sender, MouseEventArgs e)
+        private void TableItemViewer_MouseEnter(object sender, MouseEventArgs e)
         {
-            focusedItemViewr = AllTableViewer;
+            focusedItemViewr = TableItemViewer;
         }
 
         private void MenuItem_Click_4(object sender, RoutedEventArgs e)
@@ -428,57 +237,50 @@ namespace TestWPF
 
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        public void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            List<string> dirtyTableNames = new();
 
-            foreach (var pathToTablePair in MExcel.TableMap)
-            {
-                GameDataTable gameDataTable = pathToTablePair.Value;
-                gameDataTable.GetLastWriteTime(out _);
-                if (gameDataTable.bIsModified == true)
-                {
-                    dirtyTableNames.Add(Utility.GetOnlyFileName(pathToTablePair.Key));
-                }
-            }
-
-            if (dirtyTableNames.Count == 0)
-            {
-                return;
-            }
-
-            int allProgress = 0;
-            
-            CheckBoxSelector checkBoxSelector = new();
-            checkBoxSelector.OnButtonClicked += delegate (List<CheckBox> checkedList)
-            {
-                List<string> binaryMakingList = new();
-                foreach(CheckBox checkBox in checkedList)
-                {
-                    binaryMakingList.Add(MExcel.excelFileNameToPath[checkBox.Content as string]);
-                }
-
-                int loadedRatio = 80;
-                GameDataTable.MakeBinaryFiles(binaryMakingList, 
-                    (float prgressRatio) => {
-                        checkBoxSelector.UpdateTest((int)(prgressRatio * loadedRatio));
-
-                        Utility.Log("대기 작업:" + allProgress + " Ratio:" + prgressRatio + ", " + loadedRatio);
-                    return true;
-                    }, 
-                    (float prgressRatio) =>
-                    {
-                        int newValue = loadedRatio + (int)(prgressRatio * (100 - loadedRatio));
-                        checkBoxSelector.UpdateTest(newValue);
-
-                        Utility.Log("진행도:" + newValue);
-                        return true;
-                    }
-                );
-            };
-
-            checkBoxSelector.InitializeItemList(dirtyTableNames);
-            checkBoxSelector.Show();
         }
+
+        //private void Button_Click_1(object sender, RoutedEventArgs e)
+        //{
+        //    if (TableItemViewer.SelectedItemList.Count == 0)
+        //    {
+        //        return;
+        //    }
+
+        //    int allProgress = 0;
+
+        //    CheckBoxSelector checkBoxSelector = new();
+        //    checkBoxSelector.OnButtonClicked += delegate (List<CheckBox> checkedList)
+        //    {
+        //        List<string> binaryMakingList = new();
+        //        foreach(CheckBox checkBox in checkedList)
+        //        {
+        //            binaryMakingList.Add(MExcel.excelFileNameToPath[checkBox.Content as string]);
+        //        }
+
+        //        int loadedRatio = 80;
+        //        GameDataTable.MakeBinaryFiles(binaryMakingList, 
+        //            (float prgressRatio) => {
+        //                checkBoxSelector.UpdateTest((int)(prgressRatio * loadedRatio));
+
+        //                Utility.Log("대기 작업:" + allProgress + " Ratio:" + prgressRatio + ", " + loadedRatio);
+        //            return true;
+        //            }, 
+        //            (float prgressRatio) =>
+        //            {
+        //                int newValue = loadedRatio + (int)(prgressRatio * (100 - loadedRatio));
+        //                checkBoxSelector.UpdateTest(newValue);
+
+        //                Utility.Log("진행도:" + newValue);
+        //                return true;
+        //            }
+        //        );
+        //    };
+
+        //    //checkBoxSelector.InitializeItemList(dirtyTableNames);
+        //    checkBoxSelector.Show();
+        //}
     }
 }

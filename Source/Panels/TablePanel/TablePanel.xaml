@@ -22,21 +22,39 @@
         </ContextMenu>
     </UserControl.ContextMenu>
     <Grid>
-        <StackPanel>
-            <GroupBox Header="">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Button Click="Button_Click_1">바이너리 생성</Button>
-                </Grid>
-            </GroupBox>
-            <testwpf:ItemViewer x:Name="BookMarkedTableListViewer" Title="즐겨찾기" MouseEnter="BookMarkedTableListViewer_MouseEnter" GotFocus="BookMarkedTableListViewer_GotFocus"></testwpf:ItemViewer>
-            <testwpf:ItemViewer x:Name="AllTableViewer"  Title="모든 엑셀 파일" MouseEnter="AllTableViewer_MouseEnter" GotFocus="AllTableViewer_GotFocus"></testwpf:ItemViewer>
-        </StackPanel>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="3*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <GroupBox Grid.Row="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Button Click="Button_Click_1" Grid.Column="0">바이너리 생성</Button>
+                <Button Click="Button_Click_1" Grid.Column="1">테스트2</Button>
+                <Button Click="Button_Click_1" Grid.Column="2">테스트3</Button>
+            </Grid>
+        </GroupBox>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition Width="4*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Border Background="#FFCDE6FF" BorderThickness="1" CornerRadius="8" Grid.Column="0">
+                <StackPanel x:Name="BookMarkedTableListViewer">
+                    <Label HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" >전체</Label>
+                    <Label HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" >최근 수정</Label>
+                    <Label HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" >테스트</Label>
+                </StackPanel>
+            </Border>
+            <Border BorderThickness="1" CornerRadius="8" Grid.Column="1">
+                <testwpf:ItemViewer x:Name="TableItemViewer" MouseEnter="TableItemViewer_MouseEnter" GotFocus="TableItemViewer_GotFocus"></testwpf:ItemViewer>
+            </Border>
+        </Grid>
+        
         <Popup x:Name="InfoPopUp" Width="400" AllowsTransparency="True">
             <StackPanel Background="#FFC5C5C5" Opacity="0.8">
                 <Label HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="#FFFF5858">칼럼 수</Label>

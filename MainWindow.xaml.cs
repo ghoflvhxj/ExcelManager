@@ -282,7 +282,7 @@ namespace TestWPF
             //mExcel.DestroyExcelApp();
             //mExcel = null;
 
-            foreach (var Item in MyTablePanel.AllTableViewer.ItemListWrapPanel.Children)
+            foreach (var Item in MyTablePanel.TableItemViewer.ItemListWrapPanel.Children)
             {
                 MyItem MyItemInstance = Item as MyItem;
                 if (MyItemInstance != null)
@@ -294,7 +294,7 @@ namespace TestWPF
 
         private void Button_MouseLeftButtonDown3(object sender, MouseButtonEventArgs e)
         {
-            MyTablePanel.AddBookmarkListTextBox("asd");
+           //MyTablePanel.AddBookmarkListTextBox("asd");
         }
 
         private void Window_Closed(object sender, EventArgs e)
@@ -330,7 +330,7 @@ namespace TestWPF
                 Log(screen.WorkingArea.Width + ", " + screen.WorkingArea.Height);
             }
 
-            MyTablePanel.AllTableViewer.ResizeItem(50, 70);
+            MyTablePanel.TableItemViewer.ResizeItem(50, 70);
 
             // 휴스톤이 켜져있는지 검사
             //string remoteSystem = "remoteSystemName";

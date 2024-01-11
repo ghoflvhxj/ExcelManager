@@ -20,17 +20,10 @@ namespace TestWPF
     /// <summary>
     /// ItemViewer.xaml에 대한 상호 작용 논리
     /// </summary>
-    [ContentProperty("Children")]
     public partial class ItemViewer : UserControl
     {
-        public UIElementCollection Children
-        {
-            get { return MenuPanel.Children; }
-        }
-
         public string Title { get; set; }
 
-        public bool ClickToggler { get; set; }
         public bool MouseEnteredByChild;
 
         // 아이템
@@ -46,8 +39,6 @@ namespace TestWPF
         public HashSet<MyItem> DragItemList { get; set; } = new();
 
         public Color MyColor = Colors.Gray;
-        public bool IsHighlighted { get { return MyColor == Colors.Chocolate; } }
-        private Storyboard myStoryboard;
 
         // 더블클릭 델리게이트
         public delegate void OnItemDoubleClickedDelegate(MyItem doubleClickedItem);
@@ -56,19 +47,6 @@ namespace TestWPF
         public ItemViewer()
         {
             InitializeComponent();
-
-            var myDoubleAnimation = new DoubleAnimation();
-            myDoubleAnimation.From = 0.0;
-            myDoubleAnimation.To = 1.0;
-            myDoubleAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.1));
-            myDoubleAnimation.FillBehavior = FillBehavior.HoldEnd;
-            myDoubleAnimation.Completed += MyDoubleAnimation_Completed;
-
-            myStoryboard = new Storyboard();
-            myStoryboard.Children.Add(myDoubleAnimation);
-            Storyboard.SetTarget(myDoubleAnimation, ScrollViewer);
-            Storyboard.SetTargetProperty(myDoubleAnimation, new PropertyPath("RenderTransform.ScaleY"));
-            ClickToggler = true;
         }
 
         public bool AddItem(MyItem newItem, out int outIndex)
@@ -129,6 +107,11 @@ namespace TestWPF
             return true;
         }
 
+        public void RefreshItems()
+        {
+
+        }
+
         public void ResizeItem(int newWidth, int newHeight)
         {
             ItemListWrapPanel.ItemWidth = newWidth;
@@ -137,8 +120,8 @@ namespace TestWPF
 
         public void ToggleHighlight()
         {
-            MyColor = MyColor == Colors.Gray ? Colors.Chocolate : Colors.Gray;
-            ItemViewerHead.Background = new SolidColorBrush(MyColor);
+            //MyColor = MyColor == Colors.Gray ? Colors.Chocolate : Colors.Gray;
+            //ItemViewerHead.Background = new SolidColorBrush(MyColor);
         }
 
         public void UpdateScrollViewerHeight(bool bMaxmized = false)
@@ -203,59 +186,6 @@ namespace TestWPF
             }
 
             return !invalidSelectPosition;
-        }
-
-        private void MyDoubleAnimation_Completed(object sender, EventArgs e)
-        {
-            if (ClickToggler == false)
-            {
-                ScrollViewer.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        public void Label_MouseLeave(object sender, MouseEventArgs e)
-        {
-            dynamic control = sender as dynamic;
-            if (control.GetType().GetProperty("Background") != null)
-            {
-                MyColor = Colors.Gray;
-                ItemViewerHead.Background = new SolidColorBrush(MyColor);
-            }
-
-            MouseEnteredByChild = false;
-        }
-
-        private void Label_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            ClickToggler = !ClickToggler;
-            if (ClickToggler)
-            {
-                myStoryboard.AutoReverse = false;
-                myStoryboard.Begin();
-            }
-            else
-            {
-                myStoryboard.AutoReverse = true;
-                myStoryboard.Begin();
-
-                // 열리는 애니메이션으로 Seek하고 Reverse되면 닫히게 된다.
-                myStoryboard.Seek(TimeSpan.FromSeconds(0.1));
-            }
-
-            if (ScrollViewer.Visibility == Visibility.Collapsed)
-            {
-                ScrollViewer.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void ItemViewerHead_MouseMove(object sender, MouseEventArgs e)
-        {
-            dynamic control = sender as dynamic;
-            if (control.GetType().GetProperty("Background") != null && MouseEnteredByChild == false && MyColor != Colors.Chocolate)
-            {
-                MyColor = Colors.Chocolate;
-                ItemViewerHead.Background = new SolidColorBrush(MyColor);
-            }
         }
 
         private void DragSelectionCanvnas_MouseMove(object sender, MouseEventArgs e)
