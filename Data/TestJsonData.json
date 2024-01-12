@@ -1,0 +1,23 @@
+[
+    {   
+        "TargetProjectName" : [ "Anvil" ],
+        "Elements" : [
+            { 
+                "Name" : "ColumnName",    
+                "Index" : 0
+            }, 
+            {   
+                "Name" : "MachineType",   
+                "Index" : 1
+            },
+            {
+                "Name" : "DataType",   
+                "Index" : 2
+            },
+            {
+                "Name" : "StructType",   
+                "Index" : 3
+            }
+        ]
+    }
+]

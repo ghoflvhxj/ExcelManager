@@ -1,0 +1,6 @@
+{   
+    "TargetProjectName" : "Anvil",
+    "BookmarkMap" : { 
+        "오퍼레이터" : [ "Operator",  "OperatorEvent", "OperatorScript" ]
+    }
+}
