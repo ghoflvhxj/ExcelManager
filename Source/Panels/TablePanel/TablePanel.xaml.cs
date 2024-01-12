@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Excel = Microsoft.Office.Interop.Excel;
+using System.IO;
 
 namespace TestWPF
 {
@@ -21,10 +23,11 @@ namespace TestWPF
     {
         static System.Text.RegularExpressions.Regex reg = new System.Text.RegularExpressions.Regex("[^0-9]");
 
-        public Dictionary<string, MyItem> MyItemMap = new();
-        public HashSet<MyItem> SelectedItems = new();
-
-        private ItemViewer focusedItemViewr = null;
+        class BookmarkData
+        {
+            public string TargetProjectName { get; set; }
+            public Dictionary<string, List<string>> BookmarkMap { get; set; }
+        }
 
         public TablePanel()
         {
@@ -36,16 +39,10 @@ namespace TestWPF
             {
                 mainWindow.onTraversalFinished += delegate() {
                     // 테이블 리스트 뷰 패널에 아이템 추가
-                    InitializePanels();
+                    InitializeTableItems(MExcel.excelPaths.ToList());
 
-                    // 테이블 정보 표시
+                    // 마우스 오버랩 시 정보 표시
                     UpdateInfoUI();
-
-                    // 북마크 선택
-                    SelectBookmarkList("Default");
-
-                    // 스크롤 뷰 높이 업데이트
-                    TableItemViewer.UpdateScrollViewerHeight();
                 };
 
                 mainWindow.StateChanged += new EventHandler((object sender, EventArgs e) =>
@@ -59,7 +56,33 @@ namespace TestWPF
                 });
             }
 
-            focusedItemViewr = TableItemViewer;
+            string jsonDataString = File.ReadAllText(@"C:\Users\mkh2022\Desktop\TestJsonData2.json");
+            Utility.Log(jsonDataString);
+            BookmarkData bookmarkData = JsonSerializer.Deserialize<BookmarkData>(jsonDataString);
+
+            foreach(var pair in bookmarkData.BookmarkMap)
+            {
+                Button bookmark = new();
+                bookmark.Style = this.FindResource("RoundButton") as Style;
+                bookmark.Content = pair.Key;
+
+                BookMarkedTableListViewer.Children.Add(bookmark);
+
+                bookmark.Click += delegate (object sender, RoutedEventArgs e)
+                {
+                    TableItemViewer.ClearItems();
+
+                    List<string> excelPathList = new();
+                    foreach(string tableName in pair.Value)
+                    {
+                        excelPathList.Add(MExcel.GetExcelPathByTableName(tableName));
+                    }
+
+                    InitializeTableItems(excelPathList);
+                };
+            }
+
+            int a = 0;
         }
 
         public void UpdateInfoUI()
@@ -74,29 +97,28 @@ namespace TestWPF
             }
         }
 
-        public void InitializePanels()
+        public void InitializeTableItems(List<string> excelPathList)
         {
-            foreach (string excelPath in MExcel.excelPaths)
+            foreach (string excelPath in excelPathList)
             {
                 MyItem myItem = new MyItem();
                 myItem.BindExcelPath(excelPath);
-                if (AddItem(myItem))
+
+                if (AddItem(myItem) == false)
                 {
-                    MExcel.TableMap.TryAdd(excelPath, new GameDataTable());
+                    Utility.Log("TablePanel에 아이템 추가를 실패했습니다. " + myItem.FileName, Utility.LogType.Warning);
+                    continue;
                 }
             }
+
+            // 스크롤 뷰 높이 업데이트
+            TableItemViewer.UpdateScrollViewerHeight();
         }
 
         public bool AddItem(MyItem myItem)
         {
-            if(MyItemMap.ContainsKey(myItem.Path))
-            {
-                return false;
-            }
-
             if (TableItemViewer.AddItem(myItem, out _))
             {
-                MyItemMap.Add(myItem.Path, myItem);
                 return true;
             }
 
@@ -125,41 +147,49 @@ namespace TestWPF
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            bool bIsAllSelectedItemsBookmarekd = true;
-            foreach (MyItem selectedItem in TableItemViewer.SelectedItemList)
-            {
-                if (selectedItem.BookMarked == false)
-                {
-                    bIsAllSelectedItemsBookmarekd = false;
-                    break;
-                }
-            }
+            //bool bIsAllSelectedItemsBookmarekd = true;
+            //foreach (MyItem selectedItem in TableItemViewer.SelectedItemList)
+            //{
+            //    if (selectedItem.BookMarked == false)
+            //    {
+            //        bIsAllSelectedItemsBookmarekd = false;
+            //        break;
+            //    }
+            //}
 
-            foreach (MyItem selectedItem in TableItemViewer.SelectedItemList)
-            {
-                selectedItem.SetBookmark(!bIsAllSelectedItemsBookmarekd);
-            }
+            //foreach (MyItem selectedItem in TableItemViewer.SelectedItemList)
+            //{
+            //    selectedItem.SetBookmark(!bIsAllSelectedItemsBookmarekd);
+            //}
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)
         {
-            TableViewer t = new TableViewer();
-            t.Show();
+            //TableViewer t = new TableViewer();
+            //t.Show();
 
-            List<string> selectedTablePathList = new();
-            foreach(MyItem myItem in TableItemViewer.SelectedItemList)
-            {
-                selectedTablePathList.Add(myItem.Path);
-            }
+            //List<string> selectedTablePathList = new();
+            //foreach(MyItem myItem in TableItemViewer.SelectedItemList)
+            //{
+            //    selectedTablePathList.Add(myItem.Path);
+            //}
 
-            t.Init(selectedTablePathList);
+            //t.Init(selectedTablePathList);
         }
 
         private void MenuItem_Click_2(object sender, RoutedEventArgs e)
         {
             TableReferenceModifier t = new TableReferenceModifier();
             t.Show();
-            //t.Init(MExcel.TableMap[ExcelPath]);
+
+            List<string> selectedTablePathList = new();
+            foreach(MyItem tableItem in TableItemViewer.SelectedItemList)
+            {
+                selectedTablePathList.Add(tableItem.Path);
+            }
+
+            if(selectedTablePathList.Count > 0)
+                t.Init(GameDataTable.GameDataTableMap[selectedTablePathList[0]]);
         }
 
         private void BookMarkedTableListViewer_GotFocus(object sender, RoutedEventArgs e)
@@ -192,13 +222,13 @@ namespace TestWPF
                 return;
             }
 
-            if (focusedItemViewr == null)
+            if (TableItemViewer == null)
             {
                 return;
             }
 
             List<string> temp = new();
-            foreach (MyItem item in focusedItemViewr.SelectedItemList)
+            foreach (MyItem item in TableItemViewer.SelectedItemList)
             {
                 temp.Add(item.Path);
             }
@@ -213,12 +243,12 @@ namespace TestWPF
 
         private void TableItemViewer_MouseEnter(object sender, MouseEventArgs e)
         {
-            focusedItemViewr = TableItemViewer;
+            //focusedItemViewr = TableItemViewer;
         }
 
         private void MenuItem_Click_4(object sender, RoutedEventArgs e)
         {
-            foreach(MyItem item in focusedItemViewr.SelectedItemList)
+            foreach(MyItem item in TableItemViewer.SelectedItemList)
             {
                 Utility.ExecuteProcess(item.Path);
             }
@@ -226,20 +256,31 @@ namespace TestWPF
 
         private void MenuItem_Click_5(object sender, RoutedEventArgs e)
         {
-            foreach (MyItem item in focusedItemViewr.SelectedItemList)
+            foreach (MyItem tableItem in TableItemViewer.SelectedItemList)
             {
-                MExcel.GetTableByPath(item.Path).FixResourceData();
+                GameDataTable.GetTableByName(tableItem.FileName).FixResourceData();
             }
-        }
-
-        private void MenuItem_Click_6(object sender, RoutedEventArgs e)
-        {
-
         }
 
         public void Button_Click_1(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void Label_MouseEnter(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            TableItemViewer.ClearItems();
+            InitializeTableItems(MExcel.excelPaths.ToList());
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            
         }
 
         //private void Button_Click_1(object sender, RoutedEventArgs e)

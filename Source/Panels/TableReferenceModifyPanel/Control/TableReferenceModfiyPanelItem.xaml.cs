@@ -41,8 +41,7 @@ namespace TestWPF
                 return;
             }
 
-            string tablePath = MExcel.excelFileNameToPath[tableName];
-            foreach(var columnHeader in MExcel.TableMap[tablePath].ColumnHeaders)
+            foreach(var columnHeader in GameDataTable.GetTableByName(tableName).ColumnHeaders)
             {
                 ColumnComboBox.Items.Add(columnHeader.Name);
             }

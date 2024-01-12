@@ -77,7 +77,7 @@ namespace TestWPF
 
             foreach (string refTableName in table.ReferencedTableNames)
             {
-                GameDataTable referencedTable = MExcel.GetTableByName(refTableName);
+                GameDataTable referencedTable = GameDataTable.GetTableByName(refTableName);
                 if(referencedTable == null)
                 {
                     continue;
@@ -178,7 +178,7 @@ namespace TestWPF
                     }
 
                     ForeignKeyInfo foreignKeyInfo = table.ForeignKeyInfoMap[columnHeader.Name];
-                    GameDataTable referencedTable = MExcel.GetTableByName(foreignKeyInfo.ReferencedTableName);
+                    GameDataTable referencedTable = GameDataTable.GetTableByName(foreignKeyInfo.ReferencedTableName);
                     if (referencedTable == null)
                     {
                         continue;
@@ -314,9 +314,9 @@ namespace TestWPF
 
         private GameDataTable GetTable()
         {
-            if(MExcel.TableMap.ContainsKey(TableName))
+            if(GameDataTable.GameDataTableMap.ContainsKey(TableName))
             {
-                return MExcel.TableMap[TableName];
+                return GameDataTable.GameDataTableMap[TableName];
             }
 
             return null;
@@ -532,7 +532,7 @@ namespace TestWPF
                     return;
                 }
 
-                GameDataTable referencedTable = MExcel.GetTableByName(foreignKeyInfo.ReferencedTableName);
+                GameDataTable referencedTable = GameDataTable.GetTableByName(foreignKeyInfo.ReferencedTableName);
                 if(referencedTable == null)
                 {
                     return;
@@ -676,7 +676,7 @@ namespace TestWPF
                 }
 
                 // 레퍼런스 테이블 확인
-                GameDataTable referencedTable = MExcel.GetTableByName(foreignKeyInfo.ReferencedTableName);
+                GameDataTable referencedTable = GameDataTable.GetTableByName(foreignKeyInfo.ReferencedTableName);
                 if (referencedTable == null)
                 {
                     return;
@@ -774,7 +774,7 @@ namespace TestWPF
             textBox.Text = Convert.ToString(CopiedDataArray[rowIndex, columnIndex]);
 
             ForeignKeyInfo foreignKeyInfo = table.ForeignKeyInfoMap[columnName];
-            GameDataTable referencedTable = MExcel.GetTableByName(foreignKeyInfo.ReferencedTableName);
+            GameDataTable referencedTable = GameDataTable.GetTableByName(foreignKeyInfo.ReferencedTableName);
 
             // 텍스트가 편집될 때 마다 갱신
             if (MExcel.IsStringTable(referencedTable) || referencedTable.IsIndexColumn(foreignKeyInfo.ForeignKeyName))
@@ -843,7 +843,7 @@ namespace TestWPF
             }
 
             ForeignKeyInfo foreignKeyInfo = table.ForeignKeyInfoMap[columnName];
-            GameDataTable referencedTable = MExcel.GetTableByName(foreignKeyInfo.ReferencedTableName);
+            GameDataTable referencedTable = GameDataTable.GetTableByName(foreignKeyInfo.ReferencedTableName);
 
             string[] indexStrings = textBox.Text.Split(',');
             if (referencedTable.IsValidColumnName(foreignKeyInfo.ForeignKeyName) == false)

@@ -17,6 +17,9 @@ namespace TestWPF
     public class GameDataTable
     {
         [JsonIgnore]
+        public static ConcurrentDictionary<string, GameDataTable> GameDataTableMap { get; set; }
+
+        [JsonIgnore]
         private const int Index = 1;
 
         // 파일 정보
@@ -109,10 +112,12 @@ namespace TestWPF
 
         public bool Load(MExcel mExcel, bool bForce = false)
         {
-            Utility.Log(FilePath + "로드 시작");
+            string fileName = Utility.GetOnlyFileName(FilePath);
+
+            Utility.Log(fileName + "로드 시작");
             if (File.Exists(FilePath) == false)
             {
-                Utility.Log(FilePath + " 로드 실패", Utility.LogType.Warning);
+                Utility.Log(fileName + " 로드 실패", Utility.LogType.Warning);
                 return false;
             }
 
@@ -123,12 +128,12 @@ namespace TestWPF
             {
                 if (LoadGameDataTable(mExcel))
                 {
-                    Utility.Log(FilePath + " 데이터 읽음");
+                    Utility.Log(fileName + " 데이터 읽음");
                     CachedLastWriteTime = lastWriteTime;
                 }
             }
 
-            Utility.Log(FilePath + " 로드 완료", Utility.LogType.Message);
+            Utility.Log(fileName + " 로드 완료", Utility.LogType.Message);
             return true;
         }
 
@@ -219,11 +224,11 @@ namespace TestWPF
             columnHeader.StructType = 0;
             columnHeader.ColumnIndex = col;
 
-            object a = new();
-            if((EMachineType)a  == EMachineType.None)
-            {
+            //object a = new();
+            //if((EMachineType)a  == EMachineType.None)
+            //{
 
-            }
+            //}
 
             string machineType = columnHeaderAsString[(int)EColumnHeaderElement.MachineType].ToLower();
             for (int i = 0; i < (int)EMachineType.Count; ++i)
@@ -321,7 +326,7 @@ namespace TestWPF
 
             Thread t = new Thread(delegate ()
             {
-                GameDataTable enumTable = MExcel.GetTableByName("enum");
+                GameDataTable enumTable = GameDataTable.GetTableByName("enum");
                 if(enumTable == null)
                 {
                     return;
@@ -401,7 +406,7 @@ namespace TestWPF
                     }
                 }
 
-                MExcel.SaveMetaData();
+                GameDataTable.SaveCacheData();
             });
             t.Start();
         }
@@ -800,7 +805,7 @@ namespace TestWPF
 
             for (int row = (int)EColumnHeaderElement.Count + 1; row <= rowCount; ++row)
             {
-                object cellObject = MExcel.TableMap[excelPath].DataArray[row, columnIndex];
+                object cellObject = GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex];
                 if (cellObject == null)
                 {
                     continue;
@@ -819,7 +824,7 @@ namespace TestWPF
                                 if (MainWindow.allFileNameAsKey.ContainsKey(fileNameAsKey))
                                 {
                                     message += GetCheckResultAsMessage(ECheckResult.InvalidFileName, fileName, fileNameAsKey);
-                                    MExcel.TableMap[excelPath].DataArray[row, columnIndex] = MainWindow.allFileNameAsKey[fileNameAsKey];
+                                    GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = MainWindow.allFileNameAsKey[fileNameAsKey];
                                 }
                                 else
                                 {
@@ -864,7 +869,7 @@ namespace TestWPF
                                         {
                                             message += GetCheckResultAsMessage(ECheckResult.InvalidDirectoryName, directoryNames[i], directoryNameAsKey);
                                             string onlyDirectroy = originCellValue.Substring(0, originCellValue.LastIndexOf('/') + 1);
-                                            MExcel.TableMap[excelPath].DataArray[row, columnIndex] = originCellValue = onlyDirectroy.Replace(directoryNames[i], MainWindow.allDirectoryActualNames[directoryNameAsKey]) + fileName;
+                                            GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = originCellValue = onlyDirectroy.Replace(directoryNames[i], MainWindow.allDirectoryActualNames[directoryNameAsKey]) + fileName;
                                         }
                                         else
                                         {
@@ -886,7 +891,7 @@ namespace TestWPF
                                     message += GetCheckResultAsMessage(ECheckResult.InvalidFileName, fileName, fileNameAsKey);
 
                                     string onlyDirectroy = originCellValue.Substring(0, originCellValue.LastIndexOf('/') + 1);
-                                    MExcel.TableMap[excelPath].DataArray[row, columnIndex] = onlyDirectroy + MainWindow.allFileNameAsKey[fileNameAsKey];
+                                    GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = onlyDirectroy + MainWindow.allFileNameAsKey[fileNameAsKey];
                                 }
                                 else if (bExist == false)
                                 {
@@ -940,6 +945,86 @@ namespace TestWPF
             }
 
             return message;
+        }
+
+
+
+        public static Thread loadExcelThread;
+        public static void CreateGameDataTableMap<T>()
+            where T : GameDataTable, new()
+        {
+            if(bIsCacheDataLoaded == false || GameDataTable.GameDataTableMap == null)
+            {
+                ResetGameDataTableMap();
+            }
+
+            loadExcelThread = new Thread(delegate ()
+            {
+                Utility.Log(">>>>데이터 테이블 맵 만들기 시작<<<<");
+                foreach (var excelPath in MExcel.excelPaths)
+                {
+                    GameDataTable.TryAddGameDataTable<T>(excelPath);
+                    GameDataTable.GameDataTableMap[excelPath].Load(((App)App.Current).ExcelLoader);
+                }
+
+                Utility.Log(">>>>데이터 테이블 맵 만들기 완료<<<<");
+            });
+            loadExcelThread.Start();
+        }
+
+        public static void ResetGameDataTableMap()
+        {
+            GameDataTable.GameDataTableMap = new();
+        }
+
+        public static bool TryAddGameDataTable<T>(string path)
+            where T : GameDataTable, new()
+        {
+            T newTable = new();
+            if(GameDataTableMap.TryAdd(path, newTable))
+            {
+                newTable.FilePath = path;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static async void SaveCacheData()
+        {
+            FileStream fileStream = File.Create(ConfigUtility.CachedDataPath);
+            await JsonSerializer.SerializeAsync(fileStream, GameDataTableMap);
+            await fileStream.DisposeAsync();
+        }
+
+        public static bool bIsCacheDataLoaded { get; set; }
+        public static void LoadCachedData()
+        {
+            string filePath = ConfigUtility.CachedDataPath;
+            if (File.Exists(filePath))
+            {
+                string jsonString = File.ReadAllText(filePath);
+                if (jsonString == "")
+                {
+                    Utility.Log(filePath + " 데이터를 읽지 못했습니다.", Utility.LogType.Warning);
+                    return;
+                }
+
+                Utility.Log("파일을 읽습니다 경로: " + Path.GetFullPath(filePath));
+                GameDataTableMap = JsonSerializer.Deserialize<ConcurrentDictionary<string, GameDataTable>>(jsonString);
+
+                bIsCacheDataLoaded = true;
+            }
+        }
+
+        public static GameDataTable GetTableByName(string excelFileName)
+        {
+            if (MExcel.excelFileNameToPath.ContainsKey(excelFileName))
+            {
+                return GameDataTableMap[MExcel.excelFileNameToPath[excelFileName]];
+            }
+
+            return null;
         }
     }
 }

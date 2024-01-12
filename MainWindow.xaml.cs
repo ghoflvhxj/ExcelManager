@@ -38,8 +38,7 @@ namespace TestWPF
 
         private Thread travelThread = null;
         //private Thread resourceCheckThread = null;
-        public Thread loadExcelThread = null;
-
+        
         public static ConcurrentQueue<string> logQueue = new();
 
         public delegate void OnTraversalFinishedDelegate();
@@ -48,6 +47,8 @@ namespace TestWPF
         public MainWindow()
         {
             InitializeComponent();
+
+            onTraversalFinished += delegate () { GameDataTable.CreateGameDataTableMap<AnvilDataTable>(); };
         }
 
         private void Label_MouseEnter(object sender, MouseEventArgs e)
@@ -163,7 +164,7 @@ namespace TestWPF
         {
             travelThread = new Thread(delegate ()
             {
-                MExcel.LoadCachedData();
+                GameDataTable.LoadCachedData();
 
                 allFileName = new();
                 ConcurrentQueue<string> searchQueue = new ConcurrentQueue<string>();
@@ -245,51 +246,32 @@ namespace TestWPF
 
             onTraversalFinished();
 
-            // 최신화가 안되있는 엑셀 파일들 갱신
-            loadExcelThread = new Thread(delegate ()
-            {
-                foreach (var excelPath in MExcel.excelPaths)
-                {
-                    GameDataTable gameDataTable = MExcel.TableMap[excelPath];
-                    gameDataTable.Load(((App)Application.Current).ExcelLoader);
-                    //gameDataTable.UpdateModifiedProperty(out _);
-                }
-
-                //Dispatcher.BeginInvoke((Action)(() => 
-                //{
-                //    MyTablePanel.UpdateInfoUI();
-                //}));
-
-                Utility.Log("엑셀 읽기 완료", Utility.LogType.Message);
-            });
-            loadExcelThread.Start();
-
             return true;
         }
 
         private void Button_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            MExcel.SaveMetaData();
+            GameDataTable.SaveCacheData();
         }
 
         private void Button_MouseLeftButtonDown2(object sender, MouseButtonEventArgs e)
         {
-            foreach (var excelPath in MExcel.excelPaths)
-            {
-                //MExcel.TableMap[excelPath].Load(((App)Application.Current).ExcelLoader, excelPath, true);
-            }
+            GameDataTable.ResetGameDataTableMap();
+            GameDataTable.CreateGameDataTableMap<AnvilDataTable>();
 
-            //mExcel.DestroyExcelApp();
-            //mExcel = null;
+            //foreach (var excelFileName in MExcel.excelFileNames)
+            //{
+            //    GameDataTable.GetTableByName(excelFileName).Load(((App)Application.Current).ExcelLoader, true);
+            //}
 
-            foreach (var Item in MyTablePanel.TableItemViewer.ItemListWrapPanel.Children)
-            {
-                MyItem MyItemInstance = Item as MyItem;
-                if (MyItemInstance != null)
-                {
-                    MyItemInstance.InitInfoUI();
-                }
-            }
+            //foreach (var Item in MyTablePanel.TableItemViewer.ItemListWrapPanel.Children)
+            //{
+            //    MyItem MyItemInstance = Item as MyItem;
+            //    if (MyItemInstance != null)
+            //    {
+            //        MyItemInstance.InitInfoUI();
+            //    }
+            //}
         }
 
         private void Button_MouseLeftButtonDown3(object sender, MouseButtonEventArgs e)
@@ -375,7 +357,7 @@ namespace TestWPF
             }
 
             TextRange textRange = new TextRange(LogFlowDocument.ContentEnd, LogFlowDocument.ContentEnd);
-            textRange.Text = "[" + DateTime.Now + "]" + log + "\r\n";
+            textRange.Text = "[" + DateTime.Now + "]" + "\r" + log + "\r\n";
             textRange.ApplyPropertyValue(TextElement.ForegroundProperty, brush);
 
             LogTextBox.ScrollToEnd();

@@ -41,6 +41,9 @@ namespace TestWPF
         public delegate void FOnMouseHoverChanged(bool bEntered);
         public FOnMouseHoverChanged OnMouseHoverChanged;
 
+        private static SolidColorBrush GreenBrsuh = new SolidColorBrush(Colors.Green);
+        private static SolidColorBrush BlackBrsuh = new SolidColorBrush(Colors.Black);
+
         public MyItem(MyItem Rhs)
         {
             InitializeComponent();
@@ -142,14 +145,14 @@ namespace TestWPF
         {
             Selected = true;
             SelectedRectangle.Visibility = Visibility.Visible;
-            MouseEnterBorder.BorderBrush = new SolidColorBrush(Colors.Green);
+            MouseEnterBorder.BorderBrush = GreenBrsuh;
         }
 
         public void UnSelect()
         {
             Selected = false;
             SelectedRectangle.Visibility = Visibility.Hidden;
-            MouseEnterBorder.BorderBrush = new SolidColorBrush(Colors.Black);
+            MouseEnterBorder.BorderBrush = BlackBrsuh;
         }
 
         public void ToggleSelect()

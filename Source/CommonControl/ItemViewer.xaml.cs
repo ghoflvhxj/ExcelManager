@@ -47,6 +47,43 @@ namespace TestWPF
         public ItemViewer()
         {
             InitializeComponent();
+
+            // 드래그 처리 델리게이트
+            OnDragSelectionDelegate += delegate (Rect dragRect)
+            {
+                foreach(MyItem newItem in ItemListWrapPanel.Children)
+                {
+                    Rect itemRect;
+                    itemRect.Location = newItem.TranslatePoint(new Point(0, 0), ItemListWrapPanel);
+                    itemRect.Size = new Size(newItem.ActualWidth, newItem.ActualHeight);
+
+                    if (itemRect.IntersectsWith(dragRect))
+                    {
+                        if (DragItemList.Contains(newItem) == false)
+                        {
+                            newItem.ToggleSelect();
+                            DragItemList.Add(newItem);
+                        }
+                    }
+                    else
+                    {
+                        if (DragItemList.Contains(newItem))
+                        {
+                            newItem.ToggleSelect();
+                            DragItemList.Remove(newItem);
+                        }
+                    }
+
+                    if (newItem.Selected)
+                    {
+                        SelectedItemList.Add(newItem);
+                    }
+                    else
+                    {
+                        SelectedItemList.Remove(newItem);
+                    }
+                }
+            };
         }
 
         public bool AddItem(MyItem newItem, out int outIndex)
@@ -56,40 +93,6 @@ namespace TestWPF
                 outIndex = GlobalValue.InvalidIndex;
                 return false;
             }
-
-            // 드래그 처리 델리게이트
-            OnDragSelectionDelegate += delegate (Rect dragRect)
-            {
-                Rect itemRect;
-                itemRect.Location = newItem.TranslatePoint(new Point(0, 0), ItemListWrapPanel);
-                itemRect.Size = new Size(newItem.ActualWidth, newItem.ActualHeight);
-
-                if (itemRect.IntersectsWith(dragRect))
-                {
-                    if(DragItemList.Contains(newItem) == false)
-                    {
-                        newItem.ToggleSelect();
-                        DragItemList.Add(newItem);
-                    }
-                }
-                else
-                {
-                    if(DragItemList.Contains(newItem))
-                    {
-                        newItem.ToggleSelect();
-                        DragItemList.Remove(newItem);
-                    }
-                }
-
-                if (newItem.Selected)
-                {
-                    SelectedItemList.Add(newItem);
-                }
-                else
-                {
-                    SelectedItemList.Remove(newItem);
-                }
-            };
 
             newItem.OnMouseHoverChanged += delegate (bool bEnetered)
             {
@@ -107,9 +110,14 @@ namespace TestWPF
             return true;
         }
 
-        public void RefreshItems()
+        public void ClearItems()
         {
+            SelectedItemList.Clear();
+            DragItemList.Clear();
 
+            ItemListWrapPanel.Children.Clear();
+
+            MouseEnteredItem = null;
         }
 
         public void ResizeItem(int newWidth, int newHeight)
@@ -252,6 +260,7 @@ namespace TestWPF
             if (Keyboard.IsKeyDown(Key.LeftCtrl) == false)
             {
                 ClearSelectedItems();
+                DragItemList.Clear();
             }
 
             if (MouseEnteredItem != null)
