@@ -6,56 +6,63 @@
         xmlns:local="clr-namespace:TestWPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded" ScrollViewer.CanContentScroll="True" Closed="Window_Closed" Activated="Window_Activated">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="파일">
+                <MenuItem Header="불러오기"/>
+            </MenuItem>
+        </Menu>
 
-    <Grid x:Name="ItemGrid">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <TabControl Grid.Column="0">
-                <TabItem>
-                    <TabItem.Header>
-                        <Label>에디터</Label>
-                    </TabItem.Header>
-                    <local:EditorPanel x:Name="MyEditorPannel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></local:EditorPanel>
-                </TabItem>
-                <TabItem>
-                    <TabItem.Header>
-                        <Label>테이블 관리</Label>
-                    </TabItem.Header>
-                    <StackPanel>
-                        <StackPanel x:Name="DevelopPanel" Orientation="Horizontal">
-                            <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">테이블 메타데이터 저장</Label>
-                            <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown2" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">테이블 강제 로드</Label>
-                            <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown3" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">북마크 추가 테스트</Label>
+        <Grid x:Name="ItemGrid" DockPanel.Dock="Bottom">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TabControl Grid.Column="0">
+                    <TabItem>
+                        <TabItem.Header>
+                            <Label>에디터</Label>
+                        </TabItem.Header>
+                        <local:EditorPanel x:Name="MyEditorPannel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></local:EditorPanel>
+                    </TabItem>
+                    <TabItem>
+                        <TabItem.Header>
+                            <Label>테이블 관리</Label>
+                        </TabItem.Header>
+                        <StackPanel>
+                            <StackPanel x:Name="DevelopPanel" Orientation="Horizontal">
+                                <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">테이블 메타데이터 저장</Label>
+                                <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown2" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">테이블 강제 로드</Label>
+                                <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown3" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">북마크 추가 테스트</Label>
+                            </StackPanel>
+                            <local:TablePanel x:Name="MyTablePanel"></local:TablePanel>
                         </StackPanel>
-                        <local:TablePanel x:Name="MyTablePanel"></local:TablePanel>
-                    </StackPanel>
-                </TabItem>
-            </TabControl>
-            <GroupBox Grid.Column="1">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <RichTextBox x:Name="LogTextBox" Grid.Row="0" VerticalScrollBarVisibility="Auto">
-                        <FlowDocument x:Name="LogFlowDocument">
-                            <Paragraph x:Name="RichTextBoxParagraph">
-                                
-                            </Paragraph>
-                        </FlowDocument>
-                    </RichTextBox>
-                    <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Button  Grid.Column="0" Click="Button_Click">테스트 버튼</Button>
+                    </TabItem>
+                </TabControl>
+                <GroupBox Grid.Column="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition></RowDefinition>
+                            <RowDefinition></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <RichTextBox x:Name="LogTextBox" Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                            <FlowDocument x:Name="LogFlowDocument">
+                                <Paragraph x:Name="RichTextBoxParagraph">
+
+                                </Paragraph>
+                            </FlowDocument>
+                        </RichTextBox>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Button  Grid.Column="0" Click="Button_Click">테스트 버튼</Button>
+                        </Grid>
                     </Grid>
-                </Grid>
-            </GroupBox>
+                </GroupBox>
+            </Grid>
         </Grid>
-    </Grid>
+    </DockPanel>
 </Window>
