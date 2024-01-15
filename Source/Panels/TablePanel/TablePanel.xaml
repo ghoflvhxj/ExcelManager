@@ -7,15 +7,52 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
     <UserControl.Resources>
+        <Style TargetType="Button" x:Key="RoundSystemButton">
+            <Style.Resources>
+            </Style.Resources>
+            <Setter Property="BorderThickness" Value="0,0,0,0" />
+            <Setter Property="Background" Value="Gray"></Setter>
+                <!--<Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0,0.5">
+                        <LinearGradientBrush.Transform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="0"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </LinearGradientBrush.Transform>
+                        <GradientStop Color="White" Offset="0"/>
+                        <GradientStop Color="#FF575757" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>-->
+            <Setter Property="Margin" Value="2,0,2,2"/>
+            <Setter Property="Padding" Value="1,5,1,5"/>
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
         <Style TargetType="Button" x:Key="RoundButton">
             <Style.Resources>
-                <Style TargetType="Border">
+                <!--<Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="5" />
+                </Style>-->
+            </Style.Resources>
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="#FFB2B2B2"/>
+            <Setter Property="Margin" Value="2,0,2,2"/>
+            <Setter Property="Padding" Value="1,5,1,5"/>
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+        <Style TargetType="StackPanel" x:Key="ButtonStackPanel">
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="10" />
+                    <Setter Property="BorderThickness" Value="1" />
                 </Style>
             </Style.Resources>
-            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Background" Value="#FFAED3FF"></Setter>
-            <Setter Property="Padding" Value="1,5,1,5"/>
+            <!--<Setter Property="Padding" Value="1,5,1,5"/>-->
         </Style>
     </UserControl.Resources>
     <UserControl.ContextMenu>
@@ -54,17 +91,28 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition Width="4*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Border BorderThickness="1" CornerRadius="8" Grid.Column="0" Background="AliceBlue">
-                <StackPanel x:Name="BookMarkedTableListViewer">
-                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" Click="Button_Click">전체</Button>
-                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundButton}" Click="Button_Click_2">최근 사용</Button>
-                </StackPanel>
-            </Border>
+
+            <DockPanel Grid.Column="0">
+                <!--<Border BorderThickness="1" CornerRadius="8" Background="AliceBlue" DockPanel.Dock="Top" BorderBrush="#FF5400B9">-->
+                <UniformGrid x:Name="SystemFixedPanel" Background="#FFCFCFCF" DockPanel.Dock="Top" Rows="2">
+                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundSystemButton}" Click="Button_Click">전체</Button>
+                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundSystemButton}" Click="Button_Click_2">최근 사용</Button>
+                </UniformGrid>
+                <!--</Border>-->
+                <!--<Border BorderThickness="1" CornerRadius="8" Background="AliceBlue" DockPanel.Dock="Bottom">-->
+                <UniformGrid  VerticalAlignment="Stretch" Background="#FFCFCFCF" DockPanel.Dock="Bottom" Rows="10">
+                    <StackPanel x:Name="CustomPanel">
+                        <d:Button Style="{DynamicResource RoundButton}">테스트</d:Button>
+                    </StackPanel>
+                </UniformGrid>
+                <!--</Border>-->
+            </DockPanel>
+
             <Border BorderThickness="1" CornerRadius="8" Grid.Column="1" Background="AliceBlue">
                 <testwpf:ItemViewer x:Name="TableItemViewer" MouseEnter="TableItemViewer_MouseEnter" GotFocus="TableItemViewer_GotFocus"></testwpf:ItemViewer>
             </Border>
         </Grid>
-        
+
         <Popup x:Name="InfoPopUp" Width="400" AllowsTransparency="True">
             <StackPanel Background="#FFC5C5C5" Opacity="0.8">
                 <Label HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="#FFFF5858">칼럼 수</Label>

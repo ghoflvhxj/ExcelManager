@@ -47,8 +47,6 @@ namespace TestWPF
         public MainWindow()
         {
             InitializeComponent();
-
-            onTraversalFinished += delegate () { GameDataTable.CreateGameDataTableMap<AnvilDataTable>(); };
         }
 
         private void Label_MouseEnter(object sender, MouseEventArgs e)
@@ -156,7 +154,7 @@ namespace TestWPF
                 return false;
             }
 
-            Utility.Log("Config 확인 완료.", Utility.LogType.Message);
+            Utility.Log("Config 확인 완료.", LogType.Message);
             return true;
         }
 
@@ -164,8 +162,6 @@ namespace TestWPF
         {
             travelThread = new Thread(delegate ()
             {
-                GameDataTable.LoadCachedData();
-
                 allFileName = new();
                 ConcurrentQueue<string> searchQueue = new ConcurrentQueue<string>();
                 searchQueue.Enqueue(configManager.GetSectionElementValue(ConfigManager.ESectionType.ContentPath));
@@ -239,7 +235,7 @@ namespace TestWPF
                     });
                 }
 
-                Utility.Log("파일 탐색 완료.", Utility.LogType.Message);
+                Utility.Log("파일 탐색 완료.", LogType.Message);
             });
             travelThread.Start();
             travelThread.Join();
@@ -256,9 +252,7 @@ namespace TestWPF
 
         private void Button_MouseLeftButtonDown2(object sender, MouseButtonEventArgs e)
         {
-            GameDataTable.ResetGameDataTableMap();
-            GameDataTable.CreateGameDataTableMap<AnvilDataTable>();
-
+            MyTablePanel.ResetItemViewer<AnvilDataTable>(false);
             //foreach (var excelFileName in MExcel.excelFileNames)
             //{
             //    GameDataTable.GetTableByName(excelFileName).Load(((App)Application.Current).ExcelLoader, true);
@@ -289,7 +283,7 @@ namespace TestWPF
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Log("DNS 이용 아이피", Utility.LogType.Message);
+            Log("DNS 이용 아이피", LogType.Message);
             foreach (IPAddress ip in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
             {
                 if(ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
@@ -298,7 +292,7 @@ namespace TestWPF
                 }
             }
 
-            Log("소켓 이용 아이피", Utility.LogType.Message);
+            Log("소켓 이용 아이피", LogType.Message);
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
                 socket.Connect("8.8.8.8", 65530);
@@ -306,7 +300,7 @@ namespace TestWPF
                 Log(endPoint.Address.ToString());
             }
 
-            Log("스크린 사이즈", Utility.LogType.Message);
+            Log("스크린 사이즈", LogType.Message);
             foreach(System.Windows.Forms.Screen screen in System.Windows.Forms.Screen.AllScreens)
             {
                 Log(screen.WorkingArea.Width + ", " + screen.WorkingArea.Height);
@@ -324,10 +318,10 @@ namespace TestWPF
             //}
         }
 
-        public void Log(string log, Utility.LogType logType = Utility.LogType.Default)
+        public void Log(string log, LogType logType = LogType.Default)
         {
 #if (!DEBUG)
-            if(logType == Utility.LogType.Default)
+            if(logType == LogType.Default)
             {
                 return;
             }
@@ -340,13 +334,13 @@ namespace TestWPF
             Brush brush = null;
             switch (logType)
             {
-                case Utility.LogType.Default:
+                case LogType.Default:
                     brush = Brushes.Black;
                     break;
-                case Utility.LogType.Message:
+                case LogType.Message:
                     brush = Brushes.Green;
                     break;
-                case Utility.LogType.Warning:
+                case LogType.Warning:
                     brush = Brushes.Red;
                     break;
             }

@@ -23,6 +23,7 @@
     <None Remove="Resources\Image\Excel.png" />
     <None Remove="Resources\Image\Update.PNG" />
     <None Remove="Source\CommonControl\Excel.png" />
+    <None Remove="Source\CommonControl\Loading.PNG" />
     <None Remove="Source\Panels\Test2.PNG" />
     <None Remove="XLICONS.EXE" />
   </ItemGroup>
@@ -71,6 +72,7 @@
   <ItemGroup>
     <Resource Include="1835fddc51a538f18.gif" />
     <Resource Include="Source\CommonControl\Excel.png" />
+    <Resource Include="Source\CommonControl\Loading.PNG" />
     <Resource Include="XLICONS.EXE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>

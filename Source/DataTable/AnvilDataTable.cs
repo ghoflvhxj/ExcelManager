@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace TestWPF
 {
@@ -105,6 +106,16 @@ namespace TestWPF
             RecordIndexToDataArrayIndex = newIndexToDataArrayRow;
 
             ColumnHeaders = newColumnHeaders;
+        }
+
+        public override void CopyDataFromWorkSheet(Excel.Range range)
+        {
+            base.CopyDataFromWorkSheet(range);
+
+            if (DataArray[(int)EColumnHeaderElement.Count, 1] == null)
+            {
+                range.Cells[(int)EColumnHeaderElement.Count, 1] = "none";
+            }
         }
     }
 }

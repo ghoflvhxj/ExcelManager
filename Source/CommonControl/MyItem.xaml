@@ -5,8 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TestWPF"
              mc:Ignorable="d" 
-             d:DesignHeight="15
-             0" d:DesignWidth="100" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave">
+             d:DesignHeight="150" d:DesignWidth="100" MouseEnter="UserControl_MouseEnter" MouseLeave="UserControl_MouseLeave">
 
     <Grid>
         <Border x:Name="MouseEnterBorder" BorderBrush="Black" BorderThickness="2,2,2,2" Visibility="Hidden"/>
@@ -15,7 +14,7 @@
                 <RowDefinition Height="3*"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <Image x:Name="BookMarkIcon" MaxWidth="30" MaxHeight="30" HorizontalAlignment="Right" VerticalAlignment="Top" MinWidth="20" MinHeight="20" Width="30" Height="30" Source="/1835fddc51a538f18.gif" Panel.ZIndex="1">
+            <Image x:Name="LoadingIcon" MaxWidth="30" MaxHeight="30" HorizontalAlignment="Right" VerticalAlignment="Top" MinWidth="20" MinHeight="20" Width="30" Height="30" Source="/Source/CommonControl/Loading.PNG" Panel.ZIndex="1" d:Visibility="Visible">
             </Image>
             <Image x:Name="ExcelIcon" Source="/Source/CommonControl/Excel.png">
             </Image>

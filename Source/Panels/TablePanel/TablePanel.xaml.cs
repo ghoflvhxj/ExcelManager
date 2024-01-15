@@ -38,11 +38,7 @@ namespace TestWPF
             if(mainWindow != null)
             {
                 mainWindow.onTraversalFinished += delegate() {
-                    // 테이블 리스트 뷰 패널에 아이템 추가
-                    InitializeTableItems(MExcel.excelPaths.ToList());
-
-                    // 마우스 오버랩 시 정보 표시
-                    UpdateInfoUI();
+                    ResetItemViewer<AnvilDataTable>(true);
                 };
 
                 mainWindow.StateChanged += new EventHandler((object sender, EventArgs e) =>
@@ -66,7 +62,7 @@ namespace TestWPF
                 bookmark.Style = this.FindResource("RoundButton") as Style;
                 bookmark.Content = pair.Key;
 
-                BookMarkedTableListViewer.Children.Add(bookmark);
+                CustomPanel.Children.Add(bookmark);
 
                 bookmark.Click += delegate (object sender, RoutedEventArgs e)
                 {
@@ -97,18 +93,37 @@ namespace TestWPF
             }
         }
 
+        public void ResetItemViewer<T>(bool bUseCacheData)
+            where T : GameDataTable, new()
+        {
+            GameDataTable.ResetGameDataTableMap<T>();
+
+            if(bUseCacheData)
+            {
+                GameDataTable.LoadCachedData<T>();
+            }
+
+            InitializeTableItems(MExcel.excelPaths.ToList());
+
+            GameDataTable.LoadGameDataTables();
+        }
+
         public void InitializeTableItems(List<string> excelPathList)
         {
+            TableItemViewer.ClearItems();
+
             foreach (string excelPath in excelPathList)
             {
                 MyItem myItem = new MyItem();
-                myItem.BindExcelPath(excelPath);
+                myItem.BindGameDataTable(excelPath);
 
                 if (AddItem(myItem) == false)
                 {
-                    Utility.Log("TablePanel에 아이템 추가를 실패했습니다. " + myItem.FileName, Utility.LogType.Warning);
+                    Utility.Log("TablePanel에 아이템 추가를 실패했습니다. " + myItem.FileName, LogType.Warning);
                     continue;
                 }
+
+                Utility.Log("TablePanel에 아이템 추가" + excelPath, LogType.Warning);
             }
 
             // 스크롤 뷰 높이 업데이트
@@ -227,13 +242,13 @@ namespace TestWPF
                 return;
             }
 
-            List<string> temp = new();
+            List<string> outList = new();
             foreach (MyItem item in TableItemViewer.SelectedItemList)
             {
-                temp.Add(item.Path);
+                outList.Add(item.Path);
             }
 
-            GameDataTable.MakeBinaryFiles(temp, null, null);
+            GameDataTable.MakeBinaryFiles(outList, null, null);
         }
 
         private void BookMarkedTableListViewer_MouseEnter(object sender, MouseEventArgs e)
@@ -274,7 +289,7 @@ namespace TestWPF
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            TableItemViewer.ClearItems();
+            // 리로드 테스트
             InitializeTableItems(MExcel.excelPaths.ToList());
         }
 

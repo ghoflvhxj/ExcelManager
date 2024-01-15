@@ -15,6 +15,15 @@ using System.Diagnostics;
 
 namespace TestWPF
 {
+    public enum LogType
+    {
+        Default,
+        Message,
+        Warning,
+        ProcessMessage,
+        Count
+    }
+
     public class Utility
     {
         public static Value FindOrAdd<Key, Value>(Dictionary<Key, Value> Map, Key key) where Value : class, new()
@@ -98,17 +107,26 @@ namespace TestWPF
             }
 #endif
 
-            if(Application.Current != null)
+            if(Application.Current == null)
             {
-                Application.Current.Dispatcher.BeginInvoke((Action)(() =>
-                {
-                    MainWindow mainWindow = App.Current.MainWindow as MainWindow;
-                    if(mainWindow != null)
-                    {
-                        mainWindow.Log(log, logType);
-                    }
-                }));
+                return;
             }
+
+            Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+            {
+                MainWindow mainWindow = App.Current.MainWindow as MainWindow;
+                if (mainWindow == null)
+                {
+                    return;
+                }
+
+                if (logType == LogType.ProcessMessage)
+                {
+                    log = ">>>> " + log + " <<<<";
+                }
+
+                mainWindow.Log(log, logType);
+            }));
         }
 
         public static string GetIPAddress()
@@ -137,15 +155,6 @@ namespace TestWPF
             Process process = Process.Start(processStartInfo);
             return process;
         }
-
-        public enum LogType
-        { 
-            Default,
-            Message,
-            Warning,
-            Count
-        }
-
 
         public const uint WM_KEYDOWN = 0x100;
         public const uint WM_CHAR = 0x0102;

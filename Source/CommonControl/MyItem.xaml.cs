@@ -68,16 +68,54 @@ namespace TestWPF
             InitializeComponent();
 
             BookMarkable = true;
-            BookMarkIcon.Visibility = Visibility.Collapsed;
+            LoadingIcon.Visibility = Visibility.Visible;
             OnBookMarkChangedDelegate += OnBookMarkChanged;
         }
 
-        public void BindExcelPath(string newExcelPath)
+        public bool BindGameDataTable(string newPath)
         {
-            FileName = Utility.GetOnlyFileName(newExcelPath);
-            Path = newExcelPath;
+            GameDataTable gameDataTable = GameDataTable.GetGameDataTableByPath(newPath);
+            if (gameDataTable == null)
+            {
+                Utility.Log("바인딩 할 게임 테이블을 찾을 수 없습니다. 경로:" + newPath, LogType.Warning);
+                return false;
+            }
+
+            UpdateLoadIcon(gameDataTable.LoadState);
+
+            gameDataTable.OnLoadStateChanged += delegate (EGameDataTableLoadState newState)
+            {
+                if (Application.Current != null)
+                {
+                    Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        UpdateLoadIcon(gameDataTable.LoadState);
+                    }));
+                }
+            };
+
+            FileName = Utility.GetOnlyFileName(newPath);
+            Path = newPath;
 
             FileNameTextBlock.Text = FileName;
+
+            return true;
+        }
+
+        public void UpdateLoadIcon(EGameDataTableLoadState LoadState)
+        {
+            switch (LoadState)
+            {
+                case EGameDataTableLoadState.Wait:
+                    LoadingIcon.Visibility = Visibility.Visible;
+                    break;
+                case EGameDataTableLoadState.Loading:
+                    LoadingIcon.Visibility = Visibility.Visible;
+                    break;
+                case EGameDataTableLoadState.Complete:
+                    LoadingIcon.Visibility = Visibility.Collapsed;
+                    break;
+            }
         }
 
         public void InitInfoUI()
@@ -171,13 +209,13 @@ namespace TestWPF
         {
             if(BookMarked)
             {
-                BookMarkIcon.Visibility = Visibility.Visible;
+                //BookMarkIcon.Visibility = Visibility.Visible;
 
                 MExcel.AddBookmark(Path);
             }
             else
             {
-                BookMarkIcon.Visibility = Visibility.Collapsed;
+                //BookMarkIcon.Visibility = Visibility.Collapsed;
 
                 bool bCopyFile = CopyItem == null;
                 if (bCopyFile)

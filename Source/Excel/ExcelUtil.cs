@@ -45,7 +45,7 @@ namespace TestWPF
         //        string jsonString = File.ReadAllText(filePath);
         //        if (jsonString == "")
         //        {
-        //            Utility.Log(filePath + " 데이터를 읽지 못했습니다.", Utility.LogType.Warning);
+        //            Utility.Log(filePath + " 데이터를 읽지 못했습니다.", LogType.Warning);
         //            return;
         //        }
 

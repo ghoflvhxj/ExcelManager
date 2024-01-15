@@ -171,7 +171,7 @@ namespace TestWPF
 
                 if(svnResult == SVNResult.Failed)
                 {
-                    Utility.Log("SVN 에러가 발생했습니다. 수동으로 클린 업을 해보세요.", Utility.LogType.Warning);
+                    Utility.Log("SVN 에러가 발생했습니다. 수동으로 클린 업을 해보세요.", LogType.Warning);
                     updateMessage = "SVN 에러가 발생. 로그를 확인해주세요.";
                 }
 
@@ -260,8 +260,8 @@ namespace TestWPF
             }
             catch (Exception e)
             {
-                Utility.Log(e.Message, Utility.LogType.Warning);
-                Utility.Log("클린 업을 시도 합니다.", Utility.LogType.Warning);
+                Utility.Log(e.Message, LogType.Warning);
+                Utility.Log("클린 업을 시도 합니다.", LogType.Warning);
 
                 bIsMessageBoxShow = true;
                 if (ExitAllEditorProcess("SVN 버전 체크 중 에러가 발생해 클린 업이 필요합니다. 언리얼 프로세스는 종료되지만 계속할까요?") == true)
@@ -290,8 +290,8 @@ namespace TestWPF
                     }
                     catch (Exception e2)
                     {
-                        Utility.Log(e2.Message, Utility.LogType.Warning);
-                        Utility.Log("SVN 업데이트 체크 실패", Utility.LogType.Warning);
+                        Utility.Log(e2.Message, LogType.Warning);
+                        Utility.Log("SVN 업데이트 체크 실패", LogType.Warning);
                         svnResult = SVNResult.Failed;
                     }
                 }
@@ -385,7 +385,7 @@ namespace TestWPF
             Screen firstScreen = System.Windows.Forms.Screen.AllScreens[0];
             if (firstScreen == null)
             {
-                Utility.Log("스크린 정보가 없음", Utility.LogType.Warning);
+                Utility.Log("스크린 정보가 없음", LogType.Warning);
                 return false;
             }
             
@@ -442,7 +442,7 @@ namespace TestWPF
             Screen firstScreen = System.Windows.Forms.Screen.AllScreens[0];
             if (firstScreen == null)
             {
-                Utility.Log("스크린 정보가 없음", Utility.LogType.Warning);
+                Utility.Log("스크린 정보가 없음", LogType.Warning);
                 return;
             }
 
@@ -730,7 +730,7 @@ namespace TestWPF
                     svnClient.Update(GlobalValue.GamePath, out svnUpdateResult);
                     bIsSvnUpdating = false;
                     CheckUpdate(svnClient, null);
-                    Utility.Log("SVN 업데이트 완료", Utility.LogType.Message);
+                    Utility.Log("SVN 업데이트 완료", LogType.Message);
                 });
 
                 t.Start();
@@ -763,11 +763,11 @@ namespace TestWPF
             {
                 if (pro.ExitCode == 0)
                 {
-                    Utility.Log("에디터 업데이트 완료", Utility.LogType.Message);
+                    Utility.Log("에디터 업데이트 완료", LogType.Message);
                 }
                 else
                 {
-                    Utility.Log("에디터 업데이트 실패", Utility.LogType.Warning);
+                    Utility.Log("에디터 업데이트 실패", LogType.Warning);
                 }
             }
 
@@ -802,11 +802,11 @@ namespace TestWPF
 
             if (Directory.Exists(saveGamesPath) == false)
             {
-                Utility.Log(saveGamesPath + " 가 존재하지 않습니다.", Utility.LogType.Warning);
+                Utility.Log(saveGamesPath + " 가 존재하지 않습니다.", LogType.Warning);
                 return;
             }
 
-            Utility.Log("세이브 파일이 삭제하기 전에 PIE를 종료해야합니다.", Utility.LogType.Message);
+            Utility.Log("세이브 파일이 삭제하기 전에 PIE를 종료해야합니다.", LogType.Message);
             Directory.Delete(saveGamesPath, true);
         }
 

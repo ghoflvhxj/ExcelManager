@@ -54,7 +54,7 @@ namespace TestWPF
         {
             if(tableNames.Count == 0)
             {
-                Utility.Log("tableNames.Count == 0", Utility.LogType.Warning);
+                Utility.Log("tableNames.Count == 0", LogType.Warning);
                 return;
             }
 
@@ -71,7 +71,7 @@ namespace TestWPF
             if (table.DataArray == null)
             {
                 table.LoadGameDataTable(mExcel);
-                table.MakeInfo();
+                //table.MakeInfo();
             }
             CopiedDataArray = table.DataArray;
 
@@ -89,7 +89,7 @@ namespace TestWPF
                     referencedTable.LoadGameDataTable(mExcel);
                 }
 
-                referencedTable.MakeInfo();
+                //referencedTable.MakeInfo();
             }
             //mExcel.Dispose();
 
