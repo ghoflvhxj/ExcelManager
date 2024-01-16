@@ -425,7 +425,7 @@ namespace TestWPF
 
                 // 바이너리로 만든다
                 progressCounter = 0;
-                string docPath = System.IO.Path.Combine(MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.ContentPath), "Doc");
+                string docPath = System.IO.Path.Combine(WorkSpace.Current.ContentPath, "Doc");
                 foreach (GameDataTable table in LoadedGameDataTables)
                 {
                     if (table.MakeBinaryFile(docPath, enumMap))
@@ -1035,29 +1035,29 @@ namespace TestWPF
             return false;
         }
 
-        public static async void SaveCacheData()
+        [JsonIgnore]
+        public static string CacheDataPath { get { return Path.Combine(GlobalValue.dataDirectory, "CachedData.json"); } }
+
+        public static void SaveCacheData()
         {
-            FileStream fileStream = File.Create(ConfigUtility.CachedDataPath);
-            await JsonSerializer.SerializeAsync(fileStream, GameDataTableMap);
-            await fileStream.DisposeAsync();
+            Utility.AsyncJsonSerialize(CacheDataPath, GameDataTableMap);
         }
 
         public static void LoadCachedData<T>()
             where T : GameDataTable, new()
         {
-            string filePath = ConfigUtility.CachedDataPath;
-            if (File.Exists(filePath))
+            if (File.Exists(CacheDataPath))
             {
-                string jsonString = File.ReadAllText(filePath);
+                string jsonString = File.ReadAllText(CacheDataPath);
                 if (jsonString == "")
                 {
-                    Utility.Log(filePath + " 데이터를 읽지 못했습니다.", LogType.Warning);
+                    Utility.Log(CacheDataPath + " 데이터를 읽지 못했습니다.", LogType.Warning);
                     return;
                 }
 
-                Utility.Log("파일을 읽습니다 경로: " + Path.GetFullPath(filePath));
+                Utility.Log("파일을 읽습니다 경로: " + Path.GetFullPath(CacheDataPath));
                 var CachedGameDataTableMap = JsonSerializer.Deserialize<ConcurrentDictionary<string, T>>(jsonString);
-                foreach(var pair in CachedGameDataTableMap)
+                foreach (var pair in CachedGameDataTableMap)
                 {
                     if (GameDataTableMap.ContainsKey(pair.Key) == false)
                     {

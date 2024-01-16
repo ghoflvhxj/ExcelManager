@@ -229,8 +229,7 @@ namespace TestWPF
 
         private void MenuItem_Click_3(object sender, RoutedEventArgs e)
         {
-            string docPath = MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.ContentPath);
-            docPath = System.IO.Path.Combine(docPath, "Doc");
+            string docPath = System.IO.Path.Combine(WorkSpace.Current.ContentPath, "Doc");
 
             if (System.IO.Directory.Exists(docPath) == false)
             {

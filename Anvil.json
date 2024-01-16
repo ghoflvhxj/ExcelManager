@@ -1,0 +1,29 @@
+{   
+    "ProjectName" : "ANVIL.uproject",
+    "GamePath" : "C:\\Git\\Game",
+    "ContentPath" : "C:\\Git\\Game\\Content",
+    "EnginePath" : "C:\\Git\\Engine",
+
+    "ExcludeTables" : [ "Enum" ],
+    "BookmarkMap" : { 
+        "오퍼레이터" : [ "Operator",  "OperatorEvent", "OperatorScript" ]
+    },
+    "Elements" : [
+        { 
+            "Name" : "ColumnName",    
+            "Index" : 0
+        }, 
+        {   
+            "Name" : "MachineType",   
+            "Index" : 1
+        },
+        {
+            "Name" : "DataType",   
+            "Index" : 2
+        },
+        {
+            "Name" : "StructType",   
+            "Index" : 3
+        }
+    ]
+}

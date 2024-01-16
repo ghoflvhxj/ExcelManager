@@ -24,9 +24,6 @@ using System.Net.Sockets;
 
 namespace TestWPF
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public static ConfigManager configManager = new();
@@ -69,16 +66,14 @@ namespace TestWPF
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            BuildColumnHeader();
-
-            if (CheckConfig(false))
+            if (LoadWorkspace())
             {
                 TravelContentDirectories();
                 MyEditorPannel.DelayCheckUpdate();
             }
             else
             {
-                if (MessageBoxResult.OK == MessageBox.Show("처음 실행 시 프로젝트 경로를 설정해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly))
+                if (MessageBoxResult.OK == MessageBox.Show("프로젝트 경로를 설정해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly))
                 {
                     SelectProjectFileAndTravel();
                 }
@@ -90,71 +85,79 @@ namespace TestWPF
 #endif
         }
 
-        public List<ColumnDescsription> ColumnDescsriptions { get; set; }
-        public void BuildColumnHeader()
-        {
-            string ColumnHeaderDescriptData = File.ReadAllText(@"C:\Users\mkh2022\Desktop\TestJsonData.json");
-
-            LogTextBox.AppendText(ColumnHeaderDescriptData);
-
-            ColumnDescsriptions = JsonSerializer.Deserialize<List<ColumnDescsription>>(ColumnHeaderDescriptData);
-        }
-
         private void SelectProjectFileAndTravel()
         {
+            if(travelThread != null && travelThread.IsAlive)
+            {
+                travelThread.Interrupt();
+            }
+
+            MExcel.excelPaths.Clear();
+            MExcel.excelFileNames.Clear();
+            MExcel.excelFileNameToPath.Clear();
+
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.Filter = "언리얼 프로젝트 파일 (*.uproject) | *.uproject";
             if (dlg.ShowDialog() == true)
             {
-                string gamePath = System.IO.Path.GetDirectoryName(dlg.FileName);
-                configManager.AddSectionElement(ConfigManager.ESectionType.ProjectName, Path.GetFileName(dlg.FileName), true);
-                CheckConfig(true);
+                if(SetWorkspace(dlg.FileName))
+                {
+                    TravelContentDirectories();
+                    return;
+                }
+
             }
             else
             {
                 LogTextBox.AppendText("언리얼 프로젝트 파일(.uporject)을 찾을 수 없습니다.");
-                SelectProjectFileAndTravel();
             }
+
+            SelectProjectFileAndTravel();
         }
 
-        private bool CheckConfig(bool bUpdateConfig)
+        private string GetWorkspacePath(bool bDefault)
         {
-            string gamePath = configManager.GetSectionElementValue(ConfigManager.ESectionType.GamePath);
-            GlobalValue.GamePath = gamePath;
+            return Path.Combine(GlobalValue.currentDirectory, configManager.GetSectionElementValue(ConfigManager.ESectionType.DefaultWorkspace));
+        }
 
-            Dictionary<ConfigManager.ESectionType, string> configMap = new();
-            configMap.Add(ConfigManager.ESectionType.GamePath, gamePath);
-            configMap.Add(ConfigManager.ESectionType.ContentPath, configManager.GetSectionElementValue(ConfigManager.ESectionType.ContentPath));
-            configMap.Add(ConfigManager.ESectionType.EnginePath, configManager.GetSectionElementValue(ConfigManager.ESectionType.EnginePath));
-
-            if (bUpdateConfig)
+        private bool LoadWorkspace()
+        {
+            WorkSpace loadedWorkSpace;
+            if(Utility.JsonDeserialize<WorkSpace>(GetWorkspacePath(true), out loadedWorkSpace) == false)
             {
-                configMap[ConfigManager.ESectionType.ContentPath] = Path.Combine(gamePath, "Content");
-                configMap[ConfigManager.ESectionType.EnginePath] = Path.Combine(Directory.GetParent(gamePath).FullName, "Engine");
-
-                configManager.AddSectionElement(ConfigManager.ESectionType.GamePath, gamePath, true);
-                configManager.AddSectionElement(ConfigManager.ESectionType.ContentPath, configMap[ConfigManager.ESectionType.ContentPath], true);
-                configManager.AddSectionElement(ConfigManager.ESectionType.EnginePath, configMap[ConfigManager.ESectionType.EnginePath], true);
-            }
-
-            Dictionary<string, string> invalidPathMap = new();
-            foreach (var PathPair in configMap)
-            {
-                if (Directory.Exists(PathPair.Value))
-                {
-                    continue;
-                }
-
-                invalidPathMap.Add(Utility.EnumAsString(PathPair.Key), PathPair.Value);
-            }
-
-            if (invalidPathMap.Count > 0)
-            {
-                LogTextBox.AppendText(string.Join(", ", invalidPathMap.Keys) + "에 설정된 경로가 유효하지 않습니다.");
+                Utility.Log("불러올 수 없는 워크스페이스 입니다.", LogType.Warning);
                 return false;
             }
 
-            Utility.Log("Config 확인 완료.", LogType.Message);
+            if (loadedWorkSpace.IsValid() == false)
+            {
+                Utility.Log("유효하지 않은 워크스페이스 입니다.", LogType.Warning);
+                return false;
+            }
+
+            WorkSpace.Current = loadedWorkSpace;
+
+            Utility.Log("워크스페이스 불러오기 완료.", LogType.Message);
+            return true;
+        }
+
+        public bool SetWorkspace(string ueProjectFilePath)
+        {
+            WorkSpace newWorkSpace;
+            if (Utility.JsonDeserialize<WorkSpace>(GetWorkspacePath(true), out newWorkSpace) == false)
+            {
+                return false;
+            }
+
+            newWorkSpace.ProjectName = Utility.GetOnlyFileName(ueProjectFilePath);
+            newWorkSpace.GamePath = Directory.GetParent(ueProjectFilePath).FullName;
+            newWorkSpace.ContentPath = Path.Combine(newWorkSpace.GamePath, "Content");
+            newWorkSpace.EnginePath = Path.Combine(Directory.GetParent(newWorkSpace.GamePath).FullName, "Engine");
+
+            Utility.AsyncJsonSerialize(Path.Combine(GlobalValue.currentDirectory, Utility.GetOnlyFileName(newWorkSpace.ProjectName) + ".json"), newWorkSpace);
+
+            WorkSpace.Current = newWorkSpace;
+
             return true;
         }
 
@@ -164,7 +167,14 @@ namespace TestWPF
             {
                 allFileName = new();
                 ConcurrentQueue<string> searchQueue = new ConcurrentQueue<string>();
-                searchQueue.Enqueue(configManager.GetSectionElementValue(ConfigManager.ESectionType.ContentPath));
+                searchQueue.Enqueue(WorkSpace.Current.ContentPath);
+
+                if(Directory.Exists(searchQueue.Last()) == false)
+                {
+                    Utility.Log("존재하지 않는 디렉토리를 탐색하려 합니다.", LogType.Warning);
+                    return;
+                }
+
                 while (searchQueue.Count != 0)
                 {
                     string currentDirectory;
@@ -277,7 +287,7 @@ namespace TestWPF
         {
             
 #if (!DEBUG)
-            MExcel.SaveMetaData();
+            //MExcel.SaveMetaData();
 #endif
         }
 
@@ -298,12 +308,6 @@ namespace TestWPF
                 socket.Connect("8.8.8.8", 65530);
                 IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
                 Log(endPoint.Address.ToString());
-            }
-
-            Log("스크린 사이즈", LogType.Message);
-            foreach(System.Windows.Forms.Screen screen in System.Windows.Forms.Screen.AllScreens)
-            {
-                Log(screen.WorkingArea.Width + ", " + screen.WorkingArea.Height);
             }
 
             MyTablePanel.TableItemViewer.ResizeItem(50, 70);
@@ -364,12 +368,17 @@ namespace TestWPF
                 return;
             }
 
-            if (GlobalValue.GamePath == null)
+            if (WorkSpace.Current == null)
             {
                 return;
             }
 
             MyEditorPannel.DelayCheckUpdate();
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            SelectProjectFileAndTravel();
         }
     }
 }

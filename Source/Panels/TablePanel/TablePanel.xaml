@@ -109,7 +109,7 @@
             </DockPanel>
 
             <Border BorderThickness="1" CornerRadius="8" Grid.Column="1" Background="AliceBlue">
-                <testwpf:ItemViewer x:Name="TableItemViewer" MouseEnter="TableItemViewer_MouseEnter" GotFocus="TableItemViewer_GotFocus"></testwpf:ItemViewer>
+                <local:ItemViewer x:Name="TableItemViewer" MouseEnter="TableItemViewer_MouseEnter" GotFocus="TableItemViewer_GotFocus"></local:ItemViewer>
             </Border>
         </Grid>
 

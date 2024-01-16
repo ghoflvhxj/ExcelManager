@@ -10,6 +10,7 @@
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="파일">
                 <MenuItem Header="불러오기"/>
+                <MenuItem Header="경로 재설정" Click="MenuItem_Click"/>
             </MenuItem>
         </Menu>
 

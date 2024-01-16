@@ -12,12 +12,6 @@ namespace TestWPF
         public int Index { get; set; }
     }
 
-    public class ColumnDescsription
-    {
-        public List<string> TargetProjectName { get; set; }
-        public List<ColumnElementDescription> Elements { get; set; }
-    }
-
     public enum EDataType
     {
         None,

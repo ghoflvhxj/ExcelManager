@@ -12,6 +12,7 @@ using System.Windows.Threading;
 using System.Net;
 using System.Net.Sockets;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace TestWPF
 {
@@ -154,6 +155,28 @@ namespace TestWPF
 
             Process process = Process.Start(processStartInfo);
             return process;
+        }
+
+        public static bool JsonDeserialize<T>(string path, out T outData)
+        {
+            outData = default;
+
+            if (path == null || File.Exists(path) == false)
+            {
+                return false;
+            }
+
+            string data = File.ReadAllText(path);
+            outData = JsonSerializer.Deserialize<T>(data);
+
+            return true;
+        }
+
+        public static async void AsyncJsonSerialize(string path, object serializeObject)
+        {
+            FileStream fileStream = File.Create(path);
+            await JsonSerializer.SerializeAsync(fileStream, serializeObject);
+            await fileStream.DisposeAsync();
         }
 
         public const uint WM_KEYDOWN = 0x100;

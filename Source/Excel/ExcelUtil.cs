@@ -14,8 +14,6 @@ namespace TestWPF
         static public HashSet<string> excelFileNames = new();
         static public Dictionary<string, string> excelFileNameToPath = new(StringComparer.OrdinalIgnoreCase);
 
-        static public Dictionary<string, Tuple<Excel.Workbook, Excel.Worksheet>> WorkbookSheetMap = new();
-
         static public string ProcessName { get { return "EXCEL"; } }
         static public string StringTableName { get { return "string"; } }
 
@@ -32,28 +30,6 @@ namespace TestWPF
         //    }
         //}
 
-        //public static void LoadCachedData()
-        //{
-        //    LoadCachedData(ConfigUtility.CachedDataPath);
-        //    BookmarkLoadFromSaveFile(ConfigUtility.BookmarkFileName);
-        //}
-
-        //public static void LoadCachedData(string filePath)
-        //{
-        //    if (File.Exists(filePath))
-        //    {
-        //        string jsonString = File.ReadAllText(filePath);
-        //        if (jsonString == "")
-        //        {
-        //            Utility.Log(filePath + " 데이터를 읽지 못했습니다.", LogType.Warning);
-        //            return;
-        //        }
-
-        //        Utility.Log("파일을 읽습니다 경로: " + Path.GetFullPath(filePath));
-        //        MExcel.GameDataTableMap = JsonSerializer.Deserialize<ConcurrentDictionary<string, GameDataTable>>(jsonString);
-        //    }
-        //}
-
         //public static void BookmarkLoadFromSaveFile(string filePath)
         //{
         //    if (File.Exists(filePath))
@@ -61,18 +37,6 @@ namespace TestWPF
         //        string jsonString = File.ReadAllText(filePath);
         //        MExcel.BookMarkMap = JsonSerializer.Deserialize<Dictionary<string, HashSet<string>>>(jsonString);
         //    }
-        //}
-
-        //public static void SaveMetaData()
-        //{
-        //    SaveMetaData(ConfigUtility.CachedDataPath);
-        //}
-
-        //public static async void SaveMetaData(string filePath)
-        //{
-        //    FileStream fileStream = File.Create(filePath);
-        //    await JsonSerializer.SerializeAsync(fileStream, MExcel.GameDataTableMap);
-        //    await fileStream.DisposeAsync();
         //}
 
         public static async void SaveBookmarkFile(string filePath)

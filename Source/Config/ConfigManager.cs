@@ -12,10 +12,7 @@ namespace TestWPF
 
         public enum ESectionType
         {
-            ProjectName,
-            GamePath,
-            ContentPath,
-            EnginePath,
+            DefaultWorkspace,
             Count
         }
 

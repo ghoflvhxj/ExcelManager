@@ -15,7 +15,6 @@ using System.Windows.Shapes;
 using System.IO;
 using System.IO.Pipes;
 using System.Diagnostics;
-using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Net;
@@ -24,7 +23,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace TestWPF
 {
-    public partial class EditorPanel : System.Windows.Controls.UserControl
+    public partial class EditorPanel : UserControl
     {
         public List<EditorProcessInfo> EditorProcessList = new();
         public Dictionary<int, EditorProcessInfo> ExecutedProcesses = new();
@@ -46,9 +45,9 @@ namespace TestWPF
 
 
 #if DEBUG
-        private string SettingTablePath = "C:\\Users\\mkh2022\\Desktop\\" + Utility.GetOnlyFileName(MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.ProjectName)) + ".xlsx";
+        private string SettingTablePath = System.IO.Path.Combine(GlobalValue.dataDirectory, "Table");
 #else
-        private string SettingTablePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "Data\\Table", ConfigUtility.ProjectName + ".xlsx");
+        private string SettingTablePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "Data\\Table"/*, ConfigUtility.ProjectName + ".xlsx"*/);
 #endif
 
         string[] EditorFileNames = {
@@ -143,76 +142,76 @@ namespace TestWPF
 
         public void CheckUpdate(object sender, System.EventArgs e)
         {
-            // 업데이트 중에는 버전 체크를 하지 않음
-            if (bIsSvnUpdating || bIsBinaryUpdating)
-            {
-                return;
-            }
+            //// 업데이트 중에는 버전 체크를 하지 않음
+            //if (bIsSvnUpdating || bIsBinaryUpdating)
+            //{
+            //    return;
+            //}
 
-            Thread t = new Thread(delegate ()
-            {
-                string updateMessage = "";
+            //Thread t = new Thread(delegate ()
+            //{
+            //    string updateMessage = "";
 
-                DateTime editorLastWriteTime = new();
-                bool bNewBinaryUpdated = IsBinaryUpdated(out bIsProgrammerUser, ref editorLastWriteTime);
-                lock (updateLock)
-                {
-                    bIsBinaryUpdated = bNewBinaryUpdated;
-                    if (bIsBinaryUpdated == false && bIsProgrammerUser == false)
-                    {
-                        updateMessage += "에디터 실행파일 업데이트가 필요합니다. 최신: " + editorLastWriteTime.ToString() + "\r\n";
-                    }
-                }
+            //    DateTime editorLastWriteTime = new();
+            //    bool bNewBinaryUpdated = IsBinaryUpdated(out bIsProgrammerUser, ref editorLastWriteTime);
+            //    lock (updateLock)
+            //    {
+            //        bIsBinaryUpdated = bNewBinaryUpdated;
+            //        if (bIsBinaryUpdated == false && bIsProgrammerUser == false)
+            //        {
+            //            updateMessage += "에디터 실행파일 업데이트가 필요합니다. 최신: " + editorLastWriteTime.ToString() + "\r\n";
+            //        }
+            //    }
 
-                long Start = 0, End = 0, LatestRevision = 0;
-                bool bNewSVNUpdated = false;
-                SharpSvn.SvnClient svnClient = sender as SharpSvn.SvnClient;
-                SVNResult svnResult = svnClient == null ? IsSVNUpdated(ref Start, ref End, ref LatestRevision, ref bNewSVNUpdated) : IsSVNUpdated(svnClient, ref Start, ref End, ref LatestRevision, ref bNewSVNUpdated);
+            //    long Start = 0, End = 0, LatestRevision = 0;
+            //    bool bNewSVNUpdated = false;
+            //    SharpSvn.SvnClient svnClient = sender as SharpSvn.SvnClient;
+            //    SVNResult svnResult = svnClient == null ? IsSVNUpdated(ref Start, ref End, ref LatestRevision, ref bNewSVNUpdated) : IsSVNUpdated(svnClient, ref Start, ref End, ref LatestRevision, ref bNewSVNUpdated);
 
-                if(svnResult == SVNResult.Failed)
-                {
-                    Utility.Log("SVN 에러가 발생했습니다. 수동으로 클린 업을 해보세요.", LogType.Warning);
-                    updateMessage = "SVN 에러가 발생. 로그를 확인해주세요.";
-                }
+            //    if(svnResult == SVNResult.Failed)
+            //    {
+            //        Utility.Log("SVN 에러가 발생했습니다. 수동으로 클린 업을 해보세요.", LogType.Warning);
+            //        updateMessage = "SVN 에러가 발생. 로그를 확인해주세요.";
+            //    }
 
-                lock (updateLock)
-                {
-                    bIsSVNUpdated = bNewSVNUpdated;
-                    if (svnResult == SVNResult.Success && bIsSVNUpdated == false)
-                    {
-                        updateMessage += "SVN 업데이트가 필요합니다. Revision 최신: " + LatestRevision + ", 현재: " + Start;
-                    }
-                }
+            //    lock (updateLock)
+            //    {
+            //        bIsSVNUpdated = bNewSVNUpdated;
+            //        if (svnResult == SVNResult.Success && bIsSVNUpdated == false)
+            //        {
+            //            updateMessage += "SVN 업데이트가 필요합니다. Revision 최신: " + LatestRevision + ", 현재: " + Start;
+            //        }
+            //    }
 
-                if (bIsSVNUpdated && bIsBinaryUpdated)
-                {
-                    updateMessage = "현재 최신 버전입니다.";
-                }
+            //    if (bIsSVNUpdated && bIsBinaryUpdated)
+            //    {
+            //        updateMessage = "현재 최신 버전입니다.";
+            //    }
 
-                if(System.Windows.Application.Current != null)
-                {
-                    System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() =>
-                    {
-                        UpdateAndExecuteEditorButtonMessage.Content = updateMessage;
-                        if (bIsBinaryUpdated && bIsSVNUpdated)
-                        {
-                            UpdateAndExecuteEditorButton.IsEnabled = false;
-                            UpdateAndExecuteEditorButtonMessage.Foreground = new SolidColorBrush(Colors.LightGreen);
-                            UpdateAndExecuteEditorButton.Visibility = Visibility.Collapsed;
-                        }
-                        else
-                        {
-                            UpdateAndExecuteEditorButton.IsEnabled = true;
-                            UpdateAndExecuteEditorButtonMessage.Foreground = new SolidColorBrush(Colors.Red);
-                            UpdateAndExecuteEditorButton.Visibility = Visibility.Visible;
-                        }
+            //    if(System.Windows.Application.Current != null)
+            //    {
+            //        System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() =>
+            //        {
+            //            UpdateAndExecuteEditorButtonMessage.Content = updateMessage;
+            //            if (bIsBinaryUpdated && bIsSVNUpdated)
+            //            {
+            //                UpdateAndExecuteEditorButton.IsEnabled = false;
+            //                UpdateAndExecuteEditorButtonMessage.Foreground = new SolidColorBrush(Colors.LightGreen);
+            //                UpdateAndExecuteEditorButton.Visibility = Visibility.Collapsed;
+            //            }
+            //            else
+            //            {
+            //                UpdateAndExecuteEditorButton.IsEnabled = true;
+            //                UpdateAndExecuteEditorButtonMessage.Foreground = new SolidColorBrush(Colors.Red);
+            //                UpdateAndExecuteEditorButton.Visibility = Visibility.Visible;
+            //            }
 
 
-                    }));
-                }
-            });
+            //        }));
+            //    }
+            //});
 
-            t.Start();
+            //t.Start();
         }
 
 
@@ -223,89 +222,89 @@ namespace TestWPF
         }
 
 
-        private SVNResult IsSVNUpdated(ref long Start, ref long End, ref long LatestRevision, ref bool Result)
-        {
-            using (var svnClient = new SharpSvn.SvnClient())
-            {
-                return IsSVNUpdated(svnClient, ref Start, ref End, ref LatestRevision, ref Result);
-            }
-        }
+        //private SVNResult IsSVNUpdated(ref long Start, ref long End, ref long LatestRevision, ref bool Result)
+        //{
+        //    using (var svnClient = new SharpSvn.SvnClient())
+        //    {
+        //        return IsSVNUpdated(svnClient, ref Start, ref End, ref LatestRevision, ref Result);
+        //    }
+        //}
 
-        private SVNResult IsSVNUpdated(SharpSvn.SvnClient svnClient, ref long Start, ref long End, ref long LatestRevision, ref bool bIsUpdated)
-        {
-            bIsUpdated = false;
+        //private SVNResult IsSVNUpdated(SharpSvn.SvnClient svnClient, ref long Start, ref long End, ref long LatestRevision, ref bool bIsUpdated)
+        //{
+        //    bIsUpdated = false;
 
-            var workingCopyClient = new SharpSvn.SvnWorkingCopyClient();
-            SharpSvn.SvnWorkingCopyVersion version;
-            SharpSvn.SvnInfoEventArgs info;
-            Uri repos = new Uri("http://repositories.actionsquare.corp/svn/GR/trunk/Game/");
+        //    var workingCopyClient = new SharpSvn.SvnWorkingCopyClient();
+        //    SharpSvn.SvnWorkingCopyVersion version;
+        //    SharpSvn.SvnInfoEventArgs info;
+        //    Uri repos = new Uri("http://repositories.actionsquare.corp/svn/GR/trunk/Game/");
 
-            SVNResult svnResult = SVNResult.Failed;
-            bool bCleanUpSuccess = false;
+        //    SVNResult svnResult = SVNResult.Failed;
+        //    bool bCleanUpSuccess = false;
 
-            try
-            {
-                workingCopyClient.GetVersion(GlobalValue.GamePath, out version);
-                svnClient.GetInfo(repos, out info);
+        //    try
+        //    {
+        //        workingCopyClient.GetVersion(WorkSpace.Current.GamePath, out version);
+        //        svnClient.GetInfo(repos, out info);
 
-                Start = version.Start;
-                End = version.End;
-                LatestRevision = info.Revision;
+        //        Start = version.Start;
+        //        End = version.End;
+        //        LatestRevision = info.Revision;
 
-                bIsUpdated = version.Start == info.Revision;
+        //        bIsUpdated = version.Start == info.Revision;
 
-                svnResult = SVNResult.Success;
+        //        svnResult = SVNResult.Success;
 
-                return svnResult;
-            }
-            catch (Exception e)
-            {
-                Utility.Log(e.Message, LogType.Warning);
-                Utility.Log("클린 업을 시도 합니다.", LogType.Warning);
+        //        return svnResult;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Utility.Log(e.Message, LogType.Warning);
+        //        Utility.Log("클린 업을 시도 합니다.", LogType.Warning);
 
-                bIsMessageBoxShow = true;
-                if (ExitAllEditorProcess("SVN 버전 체크 중 에러가 발생해 클린 업이 필요합니다. 언리얼 프로세스는 종료되지만 계속할까요?") == true)
-                {
-                    svnClient.CleanUp(GlobalValue.GamePath);
-                    bCleanUpSuccess = true;
-                }
-                updateCheckTime = DateTime.Now;
-                bIsMessageBoxShow = false;
+        //        bIsMessageBoxShow = true;
+        //        if (ExitAllEditorProcess("SVN 버전 체크 중 에러가 발생해 클린 업이 필요합니다. 언리얼 프로세스는 종료되지만 계속할까요?") == true)
+        //        {
+        //            svnClient.CleanUp(WorkSpace.Current.GamePath);
+        //            bCleanUpSuccess = true;
+        //        }
+        //        updateCheckTime = DateTime.Now;
+        //        bIsMessageBoxShow = false;
 
-                if (svnResult == SVNResult.Failed && bCleanUpSuccess)
-                {
-                    // 재시도
-                    try
-                    {
-                        workingCopyClient.GetVersion(GlobalValue.GamePath, out version);
-                        svnClient.GetInfo(repos, out info);
+        //        if (svnResult == SVNResult.Failed && bCleanUpSuccess)
+        //        {
+        //            // 재시도
+        //            try
+        //            {
+        //                workingCopyClient.GetVersion(WorkSpace.Current.GamePath, out version);
+        //                svnClient.GetInfo(repos, out info);
 
-                        Start = version.Start;
-                        End = version.End;
-                        LatestRevision = info.Revision;
+        //                Start = version.Start;
+        //                End = version.End;
+        //                LatestRevision = info.Revision;
 
-                        bIsUpdated = version.Start == info.Revision;
+        //                bIsUpdated = version.Start == info.Revision;
 
-                        svnResult = SVNResult.Success;
-                    }
-                    catch (Exception e2)
-                    {
-                        Utility.Log(e2.Message, LogType.Warning);
-                        Utility.Log("SVN 업데이트 체크 실패", LogType.Warning);
-                        svnResult = SVNResult.Failed;
-                    }
-                }
+        //                svnResult = SVNResult.Success;
+        //            }
+        //            catch (Exception e2)
+        //            {
+        //                Utility.Log(e2.Message, LogType.Warning);
+        //                Utility.Log("SVN 업데이트 체크 실패", LogType.Warning);
+        //                svnResult = SVNResult.Failed;
+        //            }
+        //        }
 
-                return svnResult;
-            }
-        }
+        //        return svnResult;
+        //    }
+        //}
 
         private bool IsBinaryUpdated(out bool bIsProgrammerUser, ref DateTime latestWriteDateTime)
         {
-            string gitPath = System.IO.Path.Combine(Directory.GetParent(GlobalValue.GamePath).FullName, ".git");
+            string gitPath = System.IO.Path.Combine(Directory.GetParent(WorkSpace.Current.GamePath).FullName, ".git");
             bIsProgrammerUser = Directory.Exists(gitPath);
 
-            string gamePath = System.IO.Path.Combine(GlobalValue.GamePath, "Binaries", "Win64");
+            string gamePath = System.IO.Path.Combine(WorkSpace.Current.GamePath, "Binaries", "Win64");
             string[] myBinaryFiles = Directory.GetFiles(gamePath);
             Dictionary<string, DateTime> fileToDateTimeMap = new();
             foreach (string mybinaryFile in myBinaryFiles)
@@ -352,24 +351,24 @@ namespace TestWPF
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            EditorPositionCounter = 0;
+            //EditorPositionCounter = 0;
 
-            // 서버
-            ExecuteEditor(ExecuteType.Server);
+            //// 서버
+            //ExecuteEditor(ExecuteType.Server);
 
-            // 클라 
-            System.Windows.Forms.Timer t = new();
-            t.Interval = 5000;
-            t.Tick += delegate (System.Object o, System.EventArgs e)
-            {
-                int clientCount = GetClientCountToExectue();
-                for (int i = 0; i < clientCount; ++i)
-                {
-                    ExecuteEditor(ExecuteType.Game);
-                }
-                t.Stop();
-            };
-            t.Start();
+            //// 클라 
+            //System.Windows.Forms.Timer t = new();
+            //t.Interval = 5000;
+            //t.Tick += delegate (System.Object o, System.EventArgs e)
+            //{
+            //    int clientCount = GetClientCountToExectue();
+            //    for (int i = 0; i < clientCount; ++i)
+            //    {
+            //        ExecuteEditor(ExecuteType.Game);
+            //    }
+            //    t.Stop();
+            //};
+            //t.Start();
         }
 
         private int GetClientCountToExectue()
@@ -382,158 +381,160 @@ namespace TestWPF
             List<string> options = new();
             List<string> urlOptions = new();
 
-            Screen firstScreen = System.Windows.Forms.Screen.AllScreens[0];
-            if (firstScreen == null)
-            {
-                Utility.Log("스크린 정보가 없음", LogType.Warning);
-                return false;
-            }
-            
-            switch (executeType)
-            {
-                case ExecuteType.Game:
-                    if(MatchingServerComboBox.SelectedIndex != 0)
-                    {
-                        MatchingServerInfo mathcingServerInfo = MatchingServerInfoList[MatchingServerComboBox.SelectedIndex];
-                        options.Add("-WarehouseURL=\"http://" + mathcingServerInfo.ipAddress + "/warehouse\" -AlexandriaURL=\"http://" + mathcingServerInfo.ipAddress + "/alexandria\"");
-                    }
-                    else
-                    {
-                        options.Add("-ForceLogin");
-                    }
-                    if(ConnectToLocalServerCheckBox.IsEnabled && ConnectToLocalServerCheckBox.IsChecked == true)
-                    {
-                        options.Clear();
-                        options.Add(Utility.GetIPAddress());
-                    }
-                    AppendPositionOption(ref options);
-                    options.Add("-game");
-                    options.Add("-log");
-                    return ExecuteProcess(options, urlOptions, executeType);
-                case ExecuteType.Server:
-                    if (MatchingServerComboBox.SelectedIndex != 0)
-                    {
-                        MatchingServerInfo mathcingServerInfo = MatchingServerInfoList[MatchingServerComboBox.SelectedIndex];
-                        options.Add("-PromoterURL=\"http://" + mathcingServerInfo.ipAddress + "/promoter\" -PublicIP=\"" + MatchingServerInfoList[1].ipAddress + "\"");
-                    }
-                    else
-                    {
-                        EditorGameMode gameMode = GameModeList.ElementAtOrDefault(GameModeComboBox.SelectedIndex);
-                        urlOptions.Add("NoMatching");
-                        urlOptions.Add("Difficulty=" + gameMode.gameModeIndex);
-                        if(gameMode.option.Length > 0)
-                        {
-                            urlOptions.Add(gameMode.option);
-                        }
-                    }
-                    //AppendPositionOption(ref options);
-                    options.Add("-server");
-                    options.Add("-log");
-                    return ExecuteProcess(options, urlOptions, executeType);
-                default:
-                    return ExecuteProcess(options, urlOptions, executeType);
-            }
+            //Screen firstScreen = System.Windows.Forms.Screen.AllScreens[0];
+            //if (firstScreen == null)
+            //{
+            //    Utility.Log("스크린 정보가 없음", LogType.Warning);
+            //    return false;
+            //}
+
+            //switch (executeType)
+            //{
+            //    case ExecuteType.Game:
+            //        if(MatchingServerComboBox.SelectedIndex != 0)
+            //        {
+            //            MatchingServerInfo mathcingServerInfo = MatchingServerInfoList[MatchingServerComboBox.SelectedIndex];
+            //            options.Add("-WarehouseURL=\"http://" + mathcingServerInfo.ipAddress + "/warehouse\" -AlexandriaURL=\"http://" + mathcingServerInfo.ipAddress + "/alexandria\"");
+            //        }
+            //        else
+            //        {
+            //            options.Add("-ForceLogin");
+            //        }
+            //        if(ConnectToLocalServerCheckBox.IsEnabled && ConnectToLocalServerCheckBox.IsChecked == true)
+            //        {
+            //            options.Clear();
+            //            options.Add(Utility.GetIPAddress());
+            //        }
+            //        AppendPositionOption(ref options);
+            //        options.Add("-game");
+            //        options.Add("-log");
+            //        return ExecuteProcess(options, urlOptions, executeType);
+            //    case ExecuteType.Server:
+            //        if (MatchingServerComboBox.SelectedIndex != 0)
+            //        {
+            //            MatchingServerInfo mathcingServerInfo = MatchingServerInfoList[MatchingServerComboBox.SelectedIndex];
+            //            options.Add("-PromoterURL=\"http://" + mathcingServerInfo.ipAddress + "/promoter\" -PublicIP=\"" + MatchingServerInfoList[1].ipAddress + "\"");
+            //        }
+            //        else
+            //        {
+            //            EditorGameMode gameMode = GameModeList.ElementAtOrDefault(GameModeComboBox.SelectedIndex);
+            //            urlOptions.Add("NoMatching");
+            //            urlOptions.Add("Difficulty=" + gameMode.gameModeIndex);
+            //            if(gameMode.option.Length > 0)
+            //            {
+            //                urlOptions.Add(gameMode.option);
+            //            }
+            //        }
+            //        //AppendPositionOption(ref options);
+            //        options.Add("-server");
+            //        options.Add("-log");
+            //        return ExecuteProcess(options, urlOptions, executeType);
+            //    default:
+            //        return ExecuteProcess(options, urlOptions, executeType);
+            //}
+
+            return false;
         }
 
         public void AppendPositionOption(ref List<string> options)
         {
-            Point consolePosition, windowPosition;
-            Point workingScreenSize;
-            Screen firstScreen = System.Windows.Forms.Screen.AllScreens[0];
-            if (firstScreen == null)
-            {
-                Utility.Log("스크린 정보가 없음", LogType.Warning);
-                return;
-            }
+            //Point consolePosition, windowPosition;
+            //Point workingScreenSize;
+            //Screen firstScreen = System.Windows.Forms.Screen.AllScreens[0];
+            //if (firstScreen == null)
+            //{
+            //    Utility.Log("스크린 정보가 없음", LogType.Warning);
+            //    return;
+            //}
 
-            workingScreenSize.X = firstScreen.WorkingArea.Width;
-            workingScreenSize.Y = firstScreen.WorkingArea.Height;
+            //workingScreenSize.X = firstScreen.WorkingArea.Width;
+            //workingScreenSize.Y = firstScreen.WorkingArea.Height;
 
-            //windowPosition.X = (EditorPositionCounter % 2) * (workingScreenSize.X / 2.0);
-            //windowPosition.Y = (EditorPositionCounter / 2) * (workingScreenSize.Y / 2.0);
+            ////windowPosition.X = (EditorPositionCounter % 2) * (workingScreenSize.X / 2.0);
+            ////windowPosition.Y = (EditorPositionCounter / 2) * (workingScreenSize.Y / 2.0);
 
-            int clientCount = GetClientCountToExectue();
+            //int clientCount = GetClientCountToExectue();
 
-            windowPosition.X = 0.0;
-            windowPosition.Y = EditorPositionCounter * (workingScreenSize.Y / (double)clientCount);
+            //windowPosition.X = 0.0;
+            //windowPosition.Y = EditorPositionCounter * (workingScreenSize.Y / (double)clientCount);
 
-            // 윈도우 위치
-            options.Add("-WinX=" + (int)windowPosition.X);
-            options.Add("-WinY=" + (int)windowPosition.Y);
+            //// 윈도우 위치
+            //options.Add("-WinX=" + (int)windowPosition.X);
+            //options.Add("-WinY=" + (int)windowPosition.Y);
 
-            // 콘솔 위치
-            options.Add("-ConsoleX=" + (int)windowPosition.X  + (int)(workingScreenSize.X / 2.0));
-            options.Add("-ConsoleY=" + (int)windowPosition.Y);
+            //// 콘솔 위치
+            //options.Add("-ConsoleX=" + (int)windowPosition.X  + (int)(workingScreenSize.X / 2.0));
+            //options.Add("-ConsoleY=" + (int)windowPosition.Y);
 
-            // 해상도
-            options.Add("-ResX=" + (int)(workingScreenSize.X / (double)clientCount));
-            options.Add("-ResY=" + (int)(workingScreenSize.Y / (double)clientCount));
+            //// 해상도
+            //options.Add("-ResX=" + (int)(workingScreenSize.X / (double)clientCount));
+            //options.Add("-ResY=" + (int)(workingScreenSize.Y / (double)clientCount));
 
-            options.Add("-Windowed");
+            //options.Add("-Windowed");
 
-            ++EditorPositionCounter;
+            //++EditorPositionCounter;
         }
 
         private bool ExecuteProcess(List<string> additionalOptions, List<string>urlOptions, ExecuteType executeType)
         {
-            string gamePath = MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.GamePath);
-            string projectName = MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.ProjectName);
-            string url = System.IO.Path.Combine(gamePath, projectName);
-            if (File.Exists(url) == false)
-            {
-                return false;
-            }
+            //string gamePath = MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.GamePath);
+            //string projectName = MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.ProjectName);
+            //string url = System.IO.Path.Combine(gamePath, projectName);
+            //if (File.Exists(url) == false)
+            //{
+            //    return false;
+            //}
 
-            List<string> arguments = new();
-            arguments.Add(url);
-            if(urlOptions.Count > 0)
-            {
-                arguments.Add("?" + string.Join('?', urlOptions));
-            }
-            arguments.Add(string.Join(' ', additionalOptions));
+            //List<string> arguments = new();
+            //arguments.Add(url);
+            //if(urlOptions.Count > 0)
+            //{
+            //    arguments.Add("?" + string.Join('?', urlOptions));
+            //}
+            //arguments.Add(string.Join(' ', additionalOptions));
 
-            string EnginePath = MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.EnginePath);
-            string EditorDirectory = System.IO.Path.Combine(EnginePath, "Binaries", "Win64");
-            foreach (string EditorFileName in EditorFileNames)
-            {
-                string EditorPath = System.IO.Path.Combine(EditorDirectory, EditorFileName);
-                EditorPath = System.IO.Path.ChangeExtension(EditorPath, ".exe");
-                if (File.Exists(EditorPath))
-                {
-                    ProcessStartInfo startInfo = new ProcessStartInfo();
-                    startInfo.FileName = EditorPath;
-                    startInfo.Arguments = string.Join(' ', arguments);
+            //string EnginePath = MainWindow.configManager.GetSectionElementValue(ConfigManager.ESectionType.EnginePath);
+            //string EditorDirectory = System.IO.Path.Combine(EnginePath, "Binaries", "Win64");
+            //foreach (string EditorFileName in EditorFileNames)
+            //{
+            //    string EditorPath = System.IO.Path.Combine(EditorDirectory, EditorFileName);
+            //    EditorPath = System.IO.Path.ChangeExtension(EditorPath, ".exe");
+            //    if (File.Exists(EditorPath))
+            //    {
+            //        ProcessStartInfo startInfo = new ProcessStartInfo();
+            //        startInfo.FileName = EditorPath;
+            //        startInfo.Arguments = string.Join(' ', arguments);
 
-                    Utility.Log(startInfo.FileName + " " + startInfo.Arguments);
+            //        Utility.Log(startInfo.FileName + " " + startInfo.Arguments);
 
-                    Process process = Process.Start(startInfo);
-                    process.EnableRaisingEvents = true;
-                    process.Exited += new EventHandler(Editor_Exited);
+            //        Process process = Process.Start(startInfo);
+            //        process.EnableRaisingEvents = true;
+            //        process.Exited += new EventHandler(Editor_Exited);
 
-                    // UI 바인딩
-                    EditorProcessInfo newEditorProcess = new();
-                    newEditorProcess.StrPID = Convert.ToString(process.Id);
-                    newEditorProcess.executeType = executeType;
-                    switch (executeType)
-                    { 
-                        case ExecuteType.Game:
-                            newEditorProcess.StrType = "클라이언트";
-                            break;
-                        case ExecuteType.Server:
-                            newEditorProcess.StrType = "서버";
-                            break;
-                        case ExecuteType.Editor:
-                            newEditorProcess.StrType = "에디터";
-                            break;
-                    }
-                    EditorProcessList.Add(newEditorProcess);
-                    ExecutedProcesses.Add(process.Id, newEditorProcess);
+            //        // UI 바인딩
+            //        EditorProcessInfo newEditorProcess = new();
+            //        newEditorProcess.StrPID = Convert.ToString(process.Id);
+            //        newEditorProcess.executeType = executeType;
+            //        switch (executeType)
+            //        { 
+            //            case ExecuteType.Game:
+            //                newEditorProcess.StrType = "클라이언트";
+            //                break;
+            //            case ExecuteType.Server:
+            //                newEditorProcess.StrType = "서버";
+            //                break;
+            //            case ExecuteType.Editor:
+            //                newEditorProcess.StrType = "에디터";
+            //                break;
+            //        }
+            //        EditorProcessList.Add(newEditorProcess);
+            //        ExecutedProcesses.Add(process.Id, newEditorProcess);
 
-                    ProcessInfoTextBlock.Items.Refresh();
+            //        ProcessInfoTextBlock.Items.Refresh();
 
-                    return true;
-                }
-            }
+            //        return true;
+            //    }
+            //}
 
             return false;
         }
@@ -627,7 +628,7 @@ namespace TestWPF
 
                 Process processRunning = Process.GetProcessById(Convert.ToInt32(process.StrPID));
                 //Utility.SetForegroundWindow(processRunning.MainWindowHandle);
-                SendKeys.SendWait(macro.Key);
+                //SendKeys.SendWait(macro.Key);
             }
         }
 
@@ -716,33 +717,33 @@ namespace TestWPF
                 return;
             }
 
-            // SVN 최신화
-            if (bIsSVNUpdated == false)
-            {
-                Utility.Log("SVN 업데이트 시작");
-                Utility.Log("경로: " + GlobalValue.GamePath);
+            //// SVN 최신화
+            //if (bIsSVNUpdated == false)
+            //{
+            //    Utility.Log("SVN 업데이트 시작");
+            //    Utility.Log("경로: " + WorkSpace.Current.GamePath);
 
-                bIsSvnUpdating = true;
+            //    bIsSvnUpdating = true;
 
-                SharpSvn.SvnClient svnClient = new SharpSvn.SvnClient();
-                Thread t = new Thread(delegate () {
-                    SharpSvn.SvnUpdateResult svnUpdateResult;
-                    svnClient.Update(GlobalValue.GamePath, out svnUpdateResult);
-                    bIsSvnUpdating = false;
-                    CheckUpdate(svnClient, null);
-                    Utility.Log("SVN 업데이트 완료", LogType.Message);
-                });
+            //    SharpSvn.SvnClient svnClient = new SharpSvn.SvnClient();
+            //    Thread t = new Thread(delegate () {
+            //        SharpSvn.SvnUpdateResult svnUpdateResult;
+            //        svnClient.Update(WorkSpace.Current.GamePath, out svnUpdateResult);
+            //        bIsSvnUpdating = false;
+            //        CheckUpdate(svnClient, null);
+            //        Utility.Log("SVN 업데이트 완료", LogType.Message);
+            //    });
 
-                t.Start();
-            }
+            //    t.Start();
+            //}
 
             // 바이너리 최신화
             if (bIsProgrammerUser == false && bIsBinaryUpdated == false)
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 startInfo.FileName = "cmd.exe";
-                startInfo.Arguments = "/C " + System.IO.Path.Combine(Directory.GetParent(GlobalValue.GamePath).FullName, "UpdateEditorBinaries.bat");
-                startInfo.WorkingDirectory = Directory.GetParent(GlobalValue.GamePath).FullName;
+                startInfo.Arguments = "/C " + System.IO.Path.Combine(Directory.GetParent(WorkSpace.Current.GamePath).FullName, "UpdateEditorBinaries.bat");
+                startInfo.WorkingDirectory = Directory.GetParent(WorkSpace.Current.GamePath).FullName;
 
                 Process process = Process.Start(startInfo);
                 process.EnableRaisingEvents = true;
@@ -798,7 +799,7 @@ namespace TestWPF
 
         private void Button_Click_8(object sender, RoutedEventArgs e)
         {
-            string saveGamesPath = System.IO.Path.Combine(GlobalValue.GamePath, "Saved", "SaveGames");
+            string saveGamesPath = System.IO.Path.Combine(WorkSpace.Current.GamePath, "Saved", "SaveGames");
 
             if (Directory.Exists(saveGamesPath) == false)
             {
