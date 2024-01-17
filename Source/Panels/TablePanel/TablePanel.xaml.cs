@@ -38,7 +38,7 @@ namespace TestWPF
             if(mainWindow != null)
             {
                 mainWindow.onTraversalFinished += delegate() {
-                    ResetItemViewer<AnvilDataTable>(true);
+                    ResetItemViewer(true);
                 };
 
                 mainWindow.StateChanged += new EventHandler((object sender, EventArgs e) =>
@@ -93,14 +93,16 @@ namespace TestWPF
             }
         }
 
-        public void ResetItemViewer<T>(bool bUseCacheData)
-            where T : GameDataTable, new()
+        public void ResetItemViewer(bool bUseCacheData)
         {
-            GameDataTable.ResetGameDataTableMap<T>();
+            if(GameDataTable.ResetGameDataTableMap() == false)
+            {
+                return;
+            }
 
             if(bUseCacheData)
             {
-                GameDataTable.LoadCachedData<T>();
+                GameDataTable.LoadCachedData();
             }
 
             InitializeTableItems(MExcel.excelPaths.ToList());

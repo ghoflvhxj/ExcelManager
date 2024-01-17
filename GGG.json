@@ -1,13 +1,14 @@
 {   
-    "ProjectName" : "ANVIL.uproject",
-    "GamePath" : "C:\\Git\\Game",
-    "ContentPath" : "C:\\Git\\Game\\Content",
-    "EnginePath" : "C:\\Git\\Engine",
+    "ProjectName" : "GGG",
+    "GamePath" : "E:\\ae\\Game",
+    "ContentPath" : "E:\\ae\\Game\\Content",
+    "EnginePath" : "E:\\ae\\Engine",
 
     "ExcludeTables" : [ "Enum" ],
     "BookmarkMap" : { 
-        "오퍼레이터" : [ "Operator",  "OperatorEvent", "OperatorScript" ]
     },
+
+    "TableType" : "GameDataTable",
     "Elements" : [
         { 
             "Name" : "ColumnName",    

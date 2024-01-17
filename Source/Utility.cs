@@ -172,7 +172,7 @@ namespace TestWPF
             return true;
         }
 
-        public static async void AsyncJsonSerialize(string path, object serializeObject)
+        public static async void AsyncJsonSerialize<T>(string path, T serializeObject)
         {
             FileStream fileStream = File.Create(path);
             await JsonSerializer.SerializeAsync(fileStream, serializeObject);

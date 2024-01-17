@@ -1011,15 +1011,23 @@ namespace TestWPF
             loadExcelThread.Start();
         }
 
-        public static void ResetGameDataTableMap<T>()
-            where T : GameDataTable, new()
+        public static bool ResetGameDataTableMap()
         {
+            if(WorkSpace.CurrentTableType == null)
+            {
+                Utility.Log("데이터 테이블 타입이 잘못되었습니다", LogType.Warning);
+                Type t = Type.GetType("TestWPF.AnvilDataTable");
+                return false;
+            }
+
             GameDataTable.GameDataTableMap = new();
             foreach (var excelPath in MExcel.excelPaths)
             {
-                T newTable = new();
+                GameDataTable newTable = (GameDataTable)Activator.CreateInstance(WorkSpace.CurrentTableType);
                 GameDataTableMap.TryAdd(excelPath, newTable);
             }
+
+            return true;
         }
 
         public static bool LoadGameDataTable(string path)
@@ -1040,11 +1048,19 @@ namespace TestWPF
 
         public static void SaveCacheData()
         {
-            Utility.AsyncJsonSerialize(CacheDataPath, GameDataTableMap);
+            Type t = GetDictionaryType();
+            var a = Activator.CreateInstance(t);
+            var addMethod = t.GetMethod("TryAdd", new[] { typeof(string), GameDataTableMap.Last().Value.GetType() });
+            foreach (var pair in GameDataTableMap)
+            {
+                //GameDataTableMap[pair.Key] = pair.Value;
+                addMethod.Invoke(a, new object[] { pair.Key, pair.Value });
+            }
+
+            Utility.AsyncJsonSerialize(CacheDataPath, a);
         }
 
-        public static void LoadCachedData<T>()
-            where T : GameDataTable, new()
+        public static void LoadCachedData()
         {
             if (File.Exists(CacheDataPath))
             {
@@ -1056,17 +1072,39 @@ namespace TestWPF
                 }
 
                 Utility.Log("파일을 읽습니다 경로: " + Path.GetFullPath(CacheDataPath));
-                var CachedGameDataTableMap = JsonSerializer.Deserialize<ConcurrentDictionary<string, T>>(jsonString);
-                foreach (var pair in CachedGameDataTableMap)
+
+                dynamic cachedDataTableMap = JsonSerializer.Deserialize(jsonString, GetDictionaryType());
+
+                foreach (var pair in cachedDataTableMap)
                 {
                     if (GameDataTableMap.ContainsKey(pair.Key) == false)
                     {
-                        Utility.Log("캐시 데이터에 저장된 테이블이 현재 존재하지 않습니다.\n" + pair.Key, LogType.Warning);
+                        Utility.Log("캐시된 테이블이 현재 존재하지 않습니다.\n" + pair.Key, LogType.Warning);
+                        continue;
                     }
-                    GameDataTableMap[pair.Key] = pair.Value;
+
+                    Func<string, GameDataTable, GameDataTable> p = delegate (string k, GameDataTable v)
+                    {
+                        return pair.Value;
+                    };
+
+                    GameDataTableMap.AddOrUpdate(pair.Key, pair.Value, p);
                 }
             }
         }
+
+        public static Type GetDictionaryType()
+        {
+            Type t = typeof(ConcurrentDictionary<,>);
+            Type genericType = t.MakeGenericType(new Type[] { typeof(string), GameDataTableMap.Last().Value.GetType() });
+
+            return genericType;
+        }
+
+        //public static ConcurrentDictionary<string, T> CreateDictionary(T value)
+        //{
+        //    return new();
+        //}
 
         public static GameDataTable GetTableByName(string excelFileName)
         {

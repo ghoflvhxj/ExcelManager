@@ -117,5 +117,7 @@ namespace TestWPF
                 range.Cells[(int)EColumnHeaderElement.Count, 1] = "none";
             }
         }
+
+        public string Test { get; set; }
     }
 }

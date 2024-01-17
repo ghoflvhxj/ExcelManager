@@ -66,18 +66,7 @@ namespace TestWPF
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (LoadWorkspace())
-            {
-                TravelContentDirectories();
-                MyEditorPannel.DelayCheckUpdate();
-            }
-            else
-            {
-                if (MessageBoxResult.OK == MessageBox.Show("프로젝트 경로를 설정해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly))
-                {
-                    SelectProjectFileAndTravel();
-                }
-            }
+            LoadWorkspace(GetWorkspacePath(true));
 
             LogTextBox.AppendText(string.Join("\r\n", logQueue));
 #if (!DEBUG)
@@ -87,15 +76,6 @@ namespace TestWPF
 
         private void SelectProjectFileAndTravel()
         {
-            if(travelThread != null && travelThread.IsAlive)
-            {
-                travelThread.Interrupt();
-            }
-
-            MExcel.excelPaths.Clear();
-            MExcel.excelFileNames.Clear();
-            MExcel.excelFileNameToPath.Clear();
-
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.Filter = "언리얼 프로젝트 파일 (*.uproject) | *.uproject";
             if (dlg.ShowDialog() == true)
@@ -120,10 +100,30 @@ namespace TestWPF
             return Path.Combine(GlobalValue.currentDirectory, configManager.GetSectionElementValue(ConfigManager.ESectionType.DefaultWorkspace));
         }
 
-        private bool LoadWorkspace()
+        private void LoadWorkspace(string path)
         {
             WorkSpace loadedWorkSpace;
-            if(Utility.JsonDeserialize<WorkSpace>(GetWorkspacePath(true), out loadedWorkSpace) == false)
+            if (IsValidWorkspace(path, out loadedWorkSpace))
+            {
+                WorkSpace.Current = loadedWorkSpace;
+                Utility.Log("워크스페이스 불러오기 완료.", LogType.Message);
+
+                TravelContentDirectories();
+                //MyEditorPannel.DelayCheckUpdate();
+            }
+            else
+            {
+                if (MessageBoxResult.OK == MessageBox.Show("프로젝트 경로를 설정해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly))
+                {
+                    SelectProjectFileAndTravel();
+                }
+            }
+        }
+
+        private bool IsValidWorkspace(string path, out WorkSpace loadedWorkSpace)
+        {
+            loadedWorkSpace = default;
+            if (Utility.JsonDeserialize<WorkSpace>(path, out loadedWorkSpace) == false)
             {
                 Utility.Log("불러올 수 없는 워크스페이스 입니다.", LogType.Warning);
                 return false;
@@ -135,9 +135,6 @@ namespace TestWPF
                 return false;
             }
 
-            WorkSpace.Current = loadedWorkSpace;
-
-            Utility.Log("워크스페이스 불러오기 완료.", LogType.Message);
             return true;
         }
 
@@ -163,6 +160,15 @@ namespace TestWPF
 
         private bool TravelContentDirectories()
         {
+            if (travelThread != null && travelThread.IsAlive)
+            {
+                travelThread.Interrupt();
+            }
+
+            MExcel.excelPaths.Clear();
+            MExcel.excelFileNames.Clear();
+            MExcel.excelFileNameToPath.Clear();
+
             travelThread = new Thread(delegate ()
             {
                 allFileName = new();
@@ -262,7 +268,7 @@ namespace TestWPF
 
         private void Button_MouseLeftButtonDown2(object sender, MouseButtonEventArgs e)
         {
-            MyTablePanel.ResetItemViewer<AnvilDataTable>(false);
+            MyTablePanel.ResetItemViewer(false);
             //foreach (var excelFileName in MExcel.excelFileNames)
             //{
             //    GameDataTable.GetTableByName(excelFileName).Load(((App)Application.Current).ExcelLoader, true);
@@ -379,6 +385,16 @@ namespace TestWPF
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             SelectProjectFileAndTravel();
+        }
+
+        private void MenuItem_Click_1(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "워크스페이스 파일 (*.json) | *.json";
+            if (dlg.ShowDialog() == true)
+            {
+                LoadWorkspace(dlg.FileName);
+            }
         }
     }
 }

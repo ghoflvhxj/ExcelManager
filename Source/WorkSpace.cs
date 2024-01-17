@@ -16,6 +16,7 @@ namespace TestWPF
     class WorkSpace
     {
         public static WorkSpace Current { get; set; }
+        public static Type CurrentTableType { get { return Type.GetType("TestWPF." + WorkSpace.Current.TableType); } }
 
         public string ProjectName   { get; set; }
         public string GamePath      { get; set; }
@@ -24,6 +25,8 @@ namespace TestWPF
 
         public List<string> ExcludeTables { get; set; }
         public Dictionary<string, List<string>> BookmarkMap { get; set; }
+
+        public string TableType { get; set; }
         public List<ColumnDescsription> Elements { get; set; }
 
         public bool IsValid()
