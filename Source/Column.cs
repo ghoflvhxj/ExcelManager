@@ -64,8 +64,6 @@ namespace TestWPF
 
     public class AnvilColumnHeader : BaseColumnHeader
     {
-        public string EnumName { set; get; }
-
         public EDataType DataType { set; get; }
         public EMachineType MachineType { set; get; }
         public EStructType StructType { set; get; }

@@ -15,7 +15,19 @@ namespace TestWPF
 
     class WorkSpace
     {
-        public static WorkSpace Current { get; set; }
+        public enum ELoadResult
+        {
+            Success,
+            Failed,
+            InvalidData,
+            Count
+        }
+
+        public delegate void OnTraversalFinishedDelegate();
+        public static OnTraversalFinishedDelegate onCurrentWorkspaceChanged;
+
+        private static WorkSpace current;
+        public static WorkSpace Current { get { return current; } set { current = value; if(onCurrentWorkspaceChanged != null) onCurrentWorkspaceChanged(); } }
         public static Type CurrentTableType { get { return Type.GetType("TestWPF." + WorkSpace.Current.TableType); } }
 
         public string ProjectName   { get; set; }
@@ -24,7 +36,7 @@ namespace TestWPF
         public string EnginePath { get; set; }
 
         public List<string> ExcludeTables { get; set; }
-        public Dictionary<string, List<string>> BookmarkMap { get; set; }
+        public Dictionary<string, HashSet<string>> BookmarkMap { get; set; }
 
         public string TableType { get; set; }
         public List<ColumnDescsription> Elements { get; set; }

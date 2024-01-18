@@ -8,7 +8,7 @@
     "BookmarkMap" : { 
     },
 
-    "TableType" : "GameDataTable",
+    "TableType" : "GGGDataTable",
     "Elements" : [
         { 
             "Name" : "ColumnName",    

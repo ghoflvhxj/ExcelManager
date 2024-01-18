@@ -58,7 +58,7 @@
     <UserControl.ContextMenu>
         <ContextMenu>
             <MenuItem Header="열기" Click="MenuItem_Click_4"></MenuItem>
-            <MenuItem Header="즐겨찾기" Click="MenuItem_Click"></MenuItem>
+            <MenuItem Header="북마크에 추가하기" Click="MenuItem_Click"></MenuItem>
             <Separator/>
             <MenuItem Header="참조된 테이블을 연결시켜 보기" Click="MenuItem_Click_1"></MenuItem>
             <MenuItem Header="칼럼 편집"></MenuItem>

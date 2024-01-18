@@ -68,13 +68,19 @@ namespace TestWPF
         {
             LoadWorkspace(GetWorkspacePath(true));
 
+            WorkSpace.onCurrentWorkspaceChanged += delegate ()
+            {
+                Utility.AsyncJsonSerialize<WorkSpace>(GetWorkspacePath(true), WorkSpace.Current);
+            };
+
+
             LogTextBox.AppendText(string.Join("\r\n", logQueue));
 #if (!DEBUG)
             DevelopPanel.Visibility = Visibility.Collapsed;
 #endif
         }
 
-        private void SelectProjectFileAndTravel()
+        private void SelectProjectFileAndTravel(bool bRecursion)
         {
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.Filter = "언리얼 프로젝트 파일 (*.uproject) | *.uproject";
@@ -89,10 +95,13 @@ namespace TestWPF
             }
             else
             {
-                LogTextBox.AppendText("언리얼 프로젝트 파일(.uporject)을 찾을 수 없습니다.");
+                Utility.Log("언리얼 프로젝트 파일(.uporject)을 선택해야 프로그램이 정상 동작합니다.", LogType.Warning);
             }
 
-            SelectProjectFileAndTravel();
+            if(bRecursion)
+            {
+                SelectProjectFileAndTravel(bRecursion);
+            }
         }
 
         private string GetWorkspacePath(bool bDefault)
@@ -103,39 +112,51 @@ namespace TestWPF
         private void LoadWorkspace(string path)
         {
             WorkSpace loadedWorkSpace;
-            if (IsValidWorkspace(path, out loadedWorkSpace))
-            {
-                WorkSpace.Current = loadedWorkSpace;
-                Utility.Log("워크스페이스 불러오기 완료.", LogType.Message);
 
-                TravelContentDirectories();
-                //MyEditorPannel.DelayCheckUpdate();
-            }
-            else
+            switch(IsValidWorkspace(path, out loadedWorkSpace))
             {
-                if (MessageBoxResult.OK == MessageBox.Show("프로젝트 경로를 설정해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly))
+                case WorkSpace.ELoadResult.Success:
                 {
-                    SelectProjectFileAndTravel();
+                    configManager.AddSectionElement(ConfigManager.ESectionType.DefaultWorkspace, loadedWorkSpace.ProjectName + ".json", true);
+
+                    WorkSpace.Current = loadedWorkSpace;
+                    Utility.Log("워크스페이스 불러오기 완료.", LogType.Message);
+
+                    TravelContentDirectories();
+                    //MyEditorPannel.DelayCheckUpdate();
+                    break;
+                }
+                case WorkSpace.ELoadResult.InvalidData:
+                {
+                    if (MessageBoxResult.OK == MessageBox.Show("프로젝트 경로를 설정해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly))
+                    {
+                        SelectProjectFileAndTravel(true);
+                    }
+                    break;
+                }                    
+                case WorkSpace.ELoadResult.Failed:
+                {
+                    break;
                 }
             }
         }
 
-        private bool IsValidWorkspace(string path, out WorkSpace loadedWorkSpace)
+        private WorkSpace.ELoadResult IsValidWorkspace(string path, out WorkSpace loadedWorkSpace)
         {
             loadedWorkSpace = default;
             if (Utility.JsonDeserialize<WorkSpace>(path, out loadedWorkSpace) == false)
             {
                 Utility.Log("불러올 수 없는 워크스페이스 입니다.", LogType.Warning);
-                return false;
+                return WorkSpace.ELoadResult.Failed;
             }
 
             if (loadedWorkSpace.IsValid() == false)
             {
                 Utility.Log("유효하지 않은 워크스페이스 입니다.", LogType.Warning);
-                return false;
+                return WorkSpace.ELoadResult.InvalidData;
             }
 
-            return true;
+            return WorkSpace.ELoadResult.Success;
         }
 
         public bool SetWorkspace(string ueProjectFilePath)
@@ -150,8 +171,6 @@ namespace TestWPF
             newWorkSpace.GamePath = Directory.GetParent(ueProjectFilePath).FullName;
             newWorkSpace.ContentPath = Path.Combine(newWorkSpace.GamePath, "Content");
             newWorkSpace.EnginePath = Path.Combine(Directory.GetParent(newWorkSpace.GamePath).FullName, "Engine");
-
-            Utility.AsyncJsonSerialize(Path.Combine(GlobalValue.currentDirectory, Utility.GetOnlyFileName(newWorkSpace.ProjectName) + ".json"), newWorkSpace);
 
             WorkSpace.Current = newWorkSpace;
 
@@ -384,13 +403,14 @@ namespace TestWPF
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            SelectProjectFileAndTravel();
+            SelectProjectFileAndTravel(false);
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.Filter = "워크스페이스 파일 (*.json) | *.json";
+            dlg.InitialDirectory = GlobalValue.currentDirectory;
             if (dlg.ShowDialog() == true)
             {
                 LoadWorkspace(dlg.FileName);

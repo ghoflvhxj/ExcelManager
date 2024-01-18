@@ -51,34 +51,6 @@ namespace TestWPF
                     TableItemViewer.UpdateScrollViewerHeight();
                 });
             }
-
-            string jsonDataString = File.ReadAllText(@"C:\Users\mkh2022\Desktop\TestJsonData2.json");
-            Utility.Log(jsonDataString);
-            BookmarkData bookmarkData = JsonSerializer.Deserialize<BookmarkData>(jsonDataString);
-
-            foreach(var pair in bookmarkData.BookmarkMap)
-            {
-                Button bookmark = new();
-                bookmark.Style = this.FindResource("RoundButton") as Style;
-                bookmark.Content = pair.Key;
-
-                CustomPanel.Children.Add(bookmark);
-
-                bookmark.Click += delegate (object sender, RoutedEventArgs e)
-                {
-                    TableItemViewer.ClearItems();
-
-                    List<string> excelPathList = new();
-                    foreach(string tableName in pair.Value)
-                    {
-                        excelPathList.Add(MExcel.GetExcelPathByTableName(tableName));
-                    }
-
-                    InitializeTableItems(excelPathList);
-                };
-            }
-
-            int a = 0;
         }
 
         public void UpdateInfoUI()
@@ -102,10 +74,33 @@ namespace TestWPF
 
             if(bUseCacheData)
             {
-                GameDataTable.LoadCachedData();
+                GameDataTable.LoadCacheData();
             }
 
             InitializeTableItems(MExcel.excelPaths.ToList());
+
+            CustomPanel.Children.Clear();
+            foreach (var pair in WorkSpace.Current.BookmarkMap)
+            {
+                Button bookmark = new();
+                bookmark.Style = this.FindResource("RoundButton") as Style;
+                bookmark.Content = pair.Key;
+
+                CustomPanel.Children.Add(bookmark);
+
+                bookmark.Click += delegate (object sender, RoutedEventArgs e)
+                {
+                    TableItemViewer.ClearItems();
+
+                    List<string> excelPathList = new();
+                    foreach (string tableName in pair.Value)
+                    {
+                        excelPathList.Add(MExcel.GetExcelPathByTableName(tableName));
+                    }
+
+                    InitializeTableItems(excelPathList);
+                };
+            }
 
             GameDataTable.LoadGameDataTables();
         }
@@ -178,6 +173,19 @@ namespace TestWPF
             //{
             //    selectedItem.SetBookmark(!bIsAllSelectedItemsBookmarekd);
             //}
+
+            string bookmarkName = "";
+
+            if (WorkSpace.Current.BookmarkMap.ContainsKey(bookmarkName) == false)
+            {
+                WorkSpace.Current.BookmarkMap.Add(bookmarkName, new());
+            }
+
+            foreach(MyItem selectedItem in TableItemViewer.SelectedItemList)
+            {
+                WorkSpace.Current.BookmarkMap[bookmarkName].Add(selectedItem.FileName);
+            }
+
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)

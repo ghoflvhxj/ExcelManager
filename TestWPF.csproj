@@ -69,6 +69,9 @@
     <None Update="Anvil.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Data\CacheData\Anvil.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Data\CachedData.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>

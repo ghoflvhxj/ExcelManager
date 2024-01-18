@@ -247,7 +247,7 @@ namespace TestWPF
             }
         }
 
-        protected void StringToColumnHeader(ref List<string> columnHeaderAsString, AnvilColumnHeader columnHeader, int col)
+        protected void StringToColumnHeader(List<string> columnHeaderAsString, AnvilColumnHeader columnHeader, int col)
         {
             columnHeader.Name = Convert.ToString(columnHeaderAsString[(int)EColumnHeaderElement.Name]);
             columnHeader.MachineType = 0;
@@ -344,8 +344,8 @@ namespace TestWPF
             }
         }
 
-        static Dictionary<string, byte> enumMap = null;
-        public static int rowReadCounter = 0;
+        private static Dictionary<string, byte> enumMap;
+        private static int rowReadCounter;
         public static void MakeBinaryFiles(List<string> excelFilePath, Func<float, bool> OnLoadLatestCompleted, Func<float, bool> OnRowRead)
         {
             rowReadCounter = 0;
@@ -359,18 +359,14 @@ namespace TestWPF
             {
                 Utility.Log("바이너리 생성 시작", LogType.ProcessMessage);
 
-                // 프리 프로세스
+                // 이넘 읽기
                 {
                     GameDataTable enumTable = GameDataTable.GetTableByName("enum");
-                    if (enumTable == null)
-                    {
-                        return;
-                    }
 
                     // 데이터가 없으면 강제 로드, 있어도 최신이 아니면 로드 됨
-                    if (enumTable.Load(((App)App.Current).ExcelLoader, enumTable.DataArray == null) == false)
+                    if (enumTable == null || enumTable.Load(((App)App.Current).ExcelLoader, enumTable.DataArray == null) == false)
                     {
-                        Utility.Log(Utility.GetOnlyFileName(enumTable.FilePath) + " 로드에 실패해 바이너리 생성을 취소합니다", LogType.Warning);
+                        Utility.Log("Enum 테이블 로드에 실패해 바이너리 생성을 취소합니다", LogType.Warning);
                         return;
                     }
 
@@ -497,23 +493,24 @@ namespace TestWPF
             {
                 foreach (var columnHeader in ColumnHeaders)
                 {
-                    object cellObject = DataArray[row, columnHeader.ColumnIndex];
-                    string cellToString = Convert.ToString(cellObject).ToLower();
+                    object cellObject = DataArray[row, columnHeader.ColumnIndex] == null ? "" : DataArray[row, columnHeader.ColumnIndex];
+                    
+                    // 비어있는 경우 디폴트 값 세팅
                     switch (columnHeader.DataType)
                     {
                         case EDataType.String:
                         case EDataType.Enum:
-                            if (cellObject == null)
-                            {
-                                cellObject = "";
-                            }
                             break;
                         default:
-                            if (cellObject == null || Convert.ToString(cellObject) == "")
-                            {
-                                cellObject = "0";
-                            }
+                            cellObject = Convert.ToString(cellObject) == "" ? "0" : cellObject;
                             break;
+                    }
+
+                    string cellToString = Convert.ToString(cellObject).ToLower();
+
+                    if(columnHeader.StructType == EStructType.Array)
+                    {
+
                     }
 
                     switch (columnHeader.DataType)
@@ -532,7 +529,8 @@ namespace TestWPF
                                     value = Convert.ToInt32(cellObject);
                                 }
 
-                                if (columnHeader.ColumnIndex == 1)
+                                bool bIsIndexColumn = columnHeader.ColumnIndex == IndexColumn.ColumnIndex;
+                                if (bIsIndexColumn)
                                 {
                                     if (IndicesMap.ContainsKey(value))
                                     {
@@ -657,11 +655,10 @@ namespace TestWPF
                         case EDataType.Enum:
                             {
                                 byte value = 0;
-                                string enumName = cellToString;
-                                if (enumName != "")
+                                if (cellToString != "")
                                 {
-                                    string enumClass = Convert.ToString(DataArray[(int)EColumnHeaderElement.StructType + 1, columnHeader.ColumnIndex]).ToLower();
-                                    string key = enumClass.Trim() + "_" + enumName.Trim();
+                                    string enumType = Convert.ToString(DataArray[(int)EColumnHeaderElement.StructType + 1, columnHeader.ColumnIndex]).ToLower();
+                                    string key = enumType.Trim() + "_" + cellToString.Trim();
 
                                     if (enumMap.ContainsKey(key))
                                     {
@@ -788,16 +785,6 @@ namespace TestWPF
             }
 
             return false;
-        }
-
-        protected bool IsContainForeignKeyToken(string str)
-        {
-            return str[0] == '@';
-        }
-
-        private string GetCommentColumnName()
-        {
-            return "comment";
         }
 
         public bool IsIndexColumn(string colunmName)
@@ -1044,7 +1031,7 @@ namespace TestWPF
         }
 
         [JsonIgnore]
-        public static string CacheDataPath { get { return Path.Combine(GlobalValue.dataDirectory, "CachedData.json"); } }
+        public static string CacheDataPath { get { return Path.Combine(GlobalValue.dataDirectory, "CacheData", WorkSpace.Current.ProjectName + ".json"); } }
 
         public static void SaveCacheData()
         {
@@ -1060,18 +1047,18 @@ namespace TestWPF
             Utility.AsyncJsonSerialize(CacheDataPath, a);
         }
 
-        public static void LoadCachedData()
+        public static void LoadCacheData()
         {
             if (File.Exists(CacheDataPath))
             {
                 string jsonString = File.ReadAllText(CacheDataPath);
                 if (jsonString == "")
                 {
-                    Utility.Log(CacheDataPath + " 데이터를 읽지 못했습니다.", LogType.Warning);
+                    Utility.Log("캐시 데이터를 불러오지 못했습니다", LogType.Warning);
                     return;
                 }
 
-                Utility.Log("파일을 읽습니다 경로: " + Path.GetFullPath(CacheDataPath));
+                Utility.Log("캐시 데이터를 불러옵니다\n경로: "+ Path.GetFullPath(CacheDataPath));
 
                 dynamic cachedDataTableMap = JsonSerializer.Deserialize(jsonString, GetDictionaryType());
 

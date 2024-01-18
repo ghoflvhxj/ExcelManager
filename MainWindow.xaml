@@ -33,7 +33,7 @@
                         </TabItem.Header>
                         <StackPanel>
                             <StackPanel x:Name="DevelopPanel" Orientation="Horizontal">
-                                <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">테이블 메타데이터 저장</Label>
+                                <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">테이블 캐싱</Label>
                                 <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown2" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">테이블 강제 로드</Label>
                                 <Label HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="40" MouseLeftButtonDown="Button_MouseLeftButtonDown3" Background="#FFF79494" BorderBrush="Red" BorderThickness="1,1,1,1">북마크 추가 테스트</Label>
                             </StackPanel>
