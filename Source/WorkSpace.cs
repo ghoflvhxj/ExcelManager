@@ -13,7 +13,7 @@ namespace TestWPF
         public List<ColumnElementDescription> Elements { get; set; }
     }
 
-    class WorkSpace
+    class WorkSpace : ICloneable
     {
         public enum ELoadResult
         {
@@ -41,9 +41,16 @@ namespace TestWPF
         public string TableType { get; set; }
         public List<ColumnDescsription> Elements { get; set; }
 
+        public Dictionary<string, string> FunctionMap { get; set; }
+
         public bool IsValid()
         {
             return ProjectName != "" && Directory.Exists(GamePath) && Directory.Exists(ContentPath) && Directory.Exists(EnginePath);
+        }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
         }
     }
 }

@@ -18,6 +18,7 @@ namespace TestWPF
     {
         Wait,
         Loading,
+        Failed,
         Complete
     }
 
@@ -25,7 +26,7 @@ namespace TestWPF
     {
         [JsonIgnore]
         public static ConcurrentDictionary<string, GameDataTable> GameDataTableMap { get; set; }
-        public static GameDataTable GetGameDataTableByPath(string inPath)
+        public static GameDataTable GetTableByPath(string inPath)
         {
             return GameDataTableMap.ContainsKey(inPath) ? GameDataTableMap[inPath] : null;
         }
@@ -152,6 +153,12 @@ namespace TestWPF
                     Utility.Log(fileName + " 데이터 읽음");
                     CachedLastWriteTime = lastWriteTime;
                 }
+                else
+                {
+                    Utility.Log(fileName + " 열기 실패", LogType.Warning);
+                    ChangeLoadState(EGameDataTableLoadState.Failed);
+                    return false;
+                }
             }
 
             ChangeLoadState(EGameDataTableLoadState.Complete);
@@ -247,51 +254,6 @@ namespace TestWPF
             }
         }
 
-        protected void StringToColumnHeader(List<string> columnHeaderAsString, AnvilColumnHeader columnHeader, int col)
-        {
-            columnHeader.Name = Convert.ToString(columnHeaderAsString[(int)EColumnHeaderElement.Name]);
-            columnHeader.MachineType = 0;
-            columnHeader.DataType = 0;
-            columnHeader.StructType = 0;
-            columnHeader.ColumnIndex = col;
-
-            //object a = new();
-            //if((EMachineType)a  == EMachineType.None)
-            //{
-
-            //}
-
-            string machineType = columnHeaderAsString[(int)EColumnHeaderElement.MachineType].ToLower();
-            for (int i = 0; i < (int)EMachineType.Count; ++i)
-            {
-                if (Enum.GetName(typeof(EMachineType), i).ToLower() == machineType)
-                {
-                    columnHeader.MachineType = (EMachineType)i;
-                    break;
-                }
-            }
-
-            string dataType = Convert.ToString(columnHeaderAsString[(int)EColumnHeaderElement.DataType]).ToLower();
-            for (int i = 0; i < (int)EDataType.Count; ++i)
-            {
-                if (Enum.GetName(typeof(EDataType), i).ToLower() == dataType)
-                {
-                    columnHeader.DataType = (EDataType)i;
-                    break;
-                }
-            }
-
-            string structType = Convert.ToString(columnHeaderAsString[(int)EColumnHeaderElement.StructType]).ToLower();
-            for (int i = 0; i < (int)EStructType.Count; ++i)
-            {
-                if (Enum.GetName(typeof(EStructType), i).ToLower() == structType)
-                {
-                    columnHeader.StructType = (EStructType)i;
-                    break;
-                }
-            }
-        }
-
         public void ExtractResourceColum()
         {
             ResourceColums.Clear();
@@ -318,6 +280,11 @@ namespace TestWPF
                         }
 
                         string cellValue = DataArray[row, col].ToString();
+                        if(cellValue == "")
+                        {
+                            continue;
+                        }
+
                         bool bHasSlash = cellValue[0] == '/';
                         if (bHasSlash == false)
                         {
@@ -344,404 +311,13 @@ namespace TestWPF
             }
         }
 
-        private static Dictionary<string, byte> enumMap;
-        private static int rowReadCounter;
-        public static void MakeBinaryFiles(List<string> excelFilePath, Func<float, bool> OnLoadLatestCompleted, Func<float, bool> OnRowRead)
-        {
-            rowReadCounter = 0;
-
-            if (excelFilePath.Count == 0)
-            {
-                return;
-            }
-
-            Thread t = new Thread(delegate ()
-            {
-                Utility.Log("바이너리 생성 시작", LogType.ProcessMessage);
-
-                // 이넘 읽기
-                {
-                    GameDataTable enumTable = GameDataTable.GetTableByName("enum");
-
-                    // 데이터가 없으면 강제 로드, 있어도 최신이 아니면 로드 됨
-                    if (enumTable == null || enumTable.Load(((App)App.Current).ExcelLoader, enumTable.DataArray == null) == false)
-                    {
-                        Utility.Log("Enum 테이블 로드에 실패해 바이너리 생성을 취소합니다", LogType.Warning);
-                        return;
-                    }
-
-                    enumMap = new();
-                    for (int i = (int)EColumnHeaderElement.StructType + 1; i <= enumTable.RowCount; ++i)
-                    {
-                        string enumName = Convert.ToString(enumTable.DataArray[i, 1]).ToLower();
-                        byte enumValue = Convert.ToByte(enumTable.DataArray[i, 2]);
-
-                        if (enumMap.ContainsKey(enumName) == false)
-                        {
-                            enumMap.Add(enumName, enumValue);
-                        }
-                    }
-                }
-
-                int progressCounter = 0;
-
-                // 엑셀 파일을 읽는다
-                List<GameDataTable> LoadedGameDataTables = new();
-                for (int i=0; i<excelFilePath.Count; ++i) 
-                {
-                    progressCounter = i + 1;
-                    if (OnLoadLatestCompleted != null)
-                    {
-                        App.Current.Dispatcher.BeginInvoke((Action)(() =>
-                        {
-                            OnLoadLatestCompleted(progressCounter / (float)excelFilePath.Count / 2.0f);
-                        }));
-                    }
-
-                    string path = excelFilePath[i];
-                    GameDataTable table = GameDataTable.GetGameDataTableByPath(path);
-                    if (table == null)
-                    {
-                        continue;
-                    }
-
-                    if(table.Load(((App)App.Current).ExcelLoader, table.DataArray == null))
-                    {
-                        LoadedGameDataTables.Add(table);
-                    }
-
-                    if (OnLoadLatestCompleted != null)
-                    {
-                        App.Current.Dispatcher.BeginInvoke((Action)(() =>
-                        {
-                            OnLoadLatestCompleted(progressCounter / (float)excelFilePath.Count);
-                        }));
-                    }
-                }
-
-                // 바이너리로 만든다
-                progressCounter = 0;
-                string docPath = System.IO.Path.Combine(WorkSpace.Current.ContentPath, "Doc");
-                foreach (GameDataTable table in LoadedGameDataTables)
-                {
-                    if (table.MakeBinaryFile(docPath, enumMap))
-                    {
-                        if (OnRowRead != null)
-                        {
-                            App.Current.Dispatcher.BeginInvoke((Action)(() =>
-                            {
-                                OnRowRead(++progressCounter / LoadedGameDataTables.Count);
-                            }));
-                        }
-
-                        Utility.Log(Utility.GetOnlyFileName(table.FilePath) + " 바이너리 생성완료", LogType.Message);
-                    }
-                }
-
-                GameDataTable.SaveCacheData();
-
-                Utility.Log("바이너리 생성 완료", LogType.ProcessMessage);
-            });
-            t.Start();
-        }
-
-        public bool MakeBinaryFile(string docPath, Dictionary<string, byte> enumMap)
-        {
-            string fileName = Utility.GetOnlyFileName(FilePath);
-            string binPath = Path.Combine(docPath, "Client_" + fileName + "_Data.bin");
-            string tempBinPath = Path.Combine(docPath, "Client_" + fileName + "_Data_Temp.bin");
-
-            FileStream fs = new FileStream(tempBinPath, FileMode.Create);
-            BinaryWriter bw = new BinaryWriter(fs);
-
-            // 총 칼럼 수
-            UInt16 fieldCount = Convert.ToUInt16(ColumnHeaders.Count);
-            bw.Write(fieldCount);
-
-            // 각 칼럼의 정보
-            foreach (var columnHeader in ColumnHeaders)
-            {
-                // 데이터 타입
-                Byte fieldType = Convert.ToByte(columnHeader.DataType);
-                bw.Write(fieldType);
-
-                Byte[] stringBytes = System.Text.Encoding.Unicode.GetBytes(columnHeader.Name.Trim());
-                bw.Write((UInt16)(stringBytes.Length));
-                bw.Write(stringBytes);
-            }
-
-            // 데이터 수
-            if(LastRecordIndex <= (int)EColumnHeaderElement.Count)
-            {
-                Utility.Log("데이터가 없는 것으로 간주되고 있습니다. " + fileName, LogType.Warning);
-                return false;
-            }
-
-            UInt16 recordCount = Convert.ToUInt16(LastRecordIndex - (int)EColumnHeaderElement.Count);
-            bw.Write(recordCount);
-
-            // 데이터 검사
-            string dataCheckMessage = "";
-            Dictionary<int, int> IndicesMap = new Dictionary<int, int>();
-
-            const int bufferSize = 4096;
-            int seek = 0;
-            Byte[] buffer = new byte[bufferSize];
-
-            int start = (int)EColumnHeaderElement.Count + 1;
-            for (int row = start; row <= LastRecordIndex; ++row)
-            {
-                foreach (var columnHeader in ColumnHeaders)
-                {
-                    object cellObject = DataArray[row, columnHeader.ColumnIndex] == null ? "" : DataArray[row, columnHeader.ColumnIndex];
-                    
-                    // 비어있는 경우 디폴트 값 세팅
-                    switch (columnHeader.DataType)
-                    {
-                        case EDataType.String:
-                        case EDataType.Enum:
-                            break;
-                        default:
-                            cellObject = Convert.ToString(cellObject) == "" ? "0" : cellObject;
-                            break;
-                    }
-
-                    string cellToString = Convert.ToString(cellObject).ToLower();
-
-                    if(columnHeader.StructType == EStructType.Array)
-                    {
-
-                    }
-
-                    switch (columnHeader.DataType)
-                    {
-                        case EDataType.Int:
-                        case EDataType.StringKey:
-                            {
-                                Int32 value = 0;
-
-                                if (cellToString.Any(char.IsLetter))
-                                {
-                                    GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
-                                }
-                                else
-                                {
-                                    value = Convert.ToInt32(cellObject);
-                                }
-
-                                bool bIsIndexColumn = columnHeader.ColumnIndex == IndexColumn.ColumnIndex;
-                                if (bIsIndexColumn)
-                                {
-                                    if (IndicesMap.ContainsKey(value))
-                                    {
-                                        dataCheckMessage += IndicesMap[value] + " 행과 " + row + " 행의 인덱스가 중복되었습니다.\r\n";
-                                    }
-                                    else
-                                    {
-                                        IndicesMap.Add(value, row);
-                                    }
-                                }
-
-                                byte[] bytes = BitConverter.GetBytes(value);
-                                WriteBytes(ref bw, ref buffer, ref bytes, ref seek, bufferSize, ref cellObject, sizeof(Int32));
-                            }
-                            break;
-                        case EDataType.Int64:
-                            {
-                                Int64 value = 0;
-
-                                if (cellToString.Any(char.IsLetter))
-                                {
-                                    GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
-                                }
-                                else
-                                {
-                                    value = Convert.ToInt64(cellObject);
-                                }
-
-                                byte[] bytes = BitConverter.GetBytes(value);
-                                WriteBytes(ref bw, ref buffer, ref bytes, ref seek, bufferSize, ref cellObject, sizeof(Int64));
-                            }
-                            break;
-                        case EDataType.Bool:
-                            {
-                                bool value = false;
-
-                                if (cellToString == "true")
-                                {
-                                    value = true;
-                                }
-                                else if (cellToString == "false")
-                                {
-                                    value = false;
-                                }
-                                else
-                                {
-                                    GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "false");
-                                }
-
-                                byte[] bytes = BitConverter.GetBytes(value);
-                                WriteBytes(ref bw, ref buffer, ref bytes, ref seek, bufferSize, ref cellObject, sizeof(bool));
-                            }
-                            break;
-                        case EDataType.Byte:
-                            {
-                                byte value = 0;
-
-                                if (Convert.ToString(cellObject).Any(char.IsLetter))
-                                {
-                                    GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
-                                }
-                                else
-                                {
-                                    value = Convert.ToByte(cellObject);
-                                }
-
-                                byte[] bytes = BitConverter.GetBytes(value);
-                                WriteBytes(ref bw, ref buffer, ref bytes, ref seek, bufferSize, ref cellObject, sizeof(byte));
-                            }
-                            break;
-                        case EDataType.Short:
-                            {
-                                Int16 value = 0;
-
-                                if (Convert.ToString(cellObject).Any(char.IsLetter))
-                                {
-                                    GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
-                                }
-                                else
-                                {
-                                    value = Convert.ToInt16(cellObject);
-                                }
-
-                                byte[] bytes = BitConverter.GetBytes(value);
-                                WriteBytes(ref bw, ref buffer, ref bytes, ref seek, bufferSize, ref cellObject, sizeof(Int16));
-                            }
-                            break;
-                        case EDataType.Float:
-                            {
-                                float value = 0;
-
-                                if (value == 0 && Convert.ToString(cellObject).Any(IsLetterExclusiveDot))
-                                {
-                                    GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
-                                }
-                                else
-                                {
-                                    value = (float)Convert.ToDouble(cellObject);
-                                }
-
-                                byte[] bytes = BitConverter.GetBytes(value);
-                                WriteBytes(ref bw, ref buffer, ref bytes, ref seek, bufferSize, ref cellObject, sizeof(float));
-                            }
-                            break;
-                        case EDataType.Double:
-                            {
-                                double value = 0;
-
-                                if (value == 0 && Convert.ToString(cellObject).Any(IsLetterExclusiveDot))
-                                {
-                                    GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
-                                }
-                                else
-                                {
-                                    value = Convert.ToDouble(cellObject);
-                                }
-
-                                byte[] bytes = BitConverter.GetBytes(value);
-                                WriteBytes(ref bw, ref buffer, ref bytes, ref seek, bufferSize, ref cellObject, sizeof(double));
-                            }
-                            break;
-                        case EDataType.Enum:
-                            {
-                                byte value = 0;
-                                if (cellToString != "")
-                                {
-                                    string enumType = Convert.ToString(DataArray[(int)EColumnHeaderElement.StructType + 1, columnHeader.ColumnIndex]).ToLower();
-                                    string key = enumType.Trim() + "_" + cellToString.Trim();
-
-                                    if (enumMap.ContainsKey(key))
-                                    {
-                                        value = enumMap[key];
-                                    }
-                                    else
-                                    {
-                                        dataCheckMessage += "[" + row + ", " + columnHeader.Name + "] 의 " + key + "는 없는 enum입니다.\r\n";
-                                    }
-                                }
-
-                                byte[] bytes = BitConverter.GetBytes(value);
-                                WriteBytes(ref bw, ref buffer, ref bytes, ref seek, bufferSize, ref cellObject, sizeof(byte));
-                            }
-                            break;
-                        case EDataType.String:
-                            {
-                                Byte[] stringBytes = System.Text.Encoding.Unicode.GetBytes(Convert.ToString(cellObject));
-                                Byte[] lengthBytes = BitConverter.GetBytes(Convert.ToUInt16(stringBytes.Length));
-
-                                int nextSeek = seek + lengthBytes.Length + stringBytes.Length;
-                                if (nextSeek < bufferSize)
-                                {
-                                    Buffer.BlockCopy(lengthBytes, 0, buffer, seek, lengthBytes.Length);
-                                    Buffer.BlockCopy(stringBytes, 0, buffer, seek + 2, stringBytes.Length);
-
-                                    seek = nextSeek;
-                                }
-                                else
-                                {
-                                    bw.Write(buffer, 0, seek);
-
-                                    seek = 0;
-
-                                    Buffer.BlockCopy(lengthBytes, 0, buffer, seek, lengthBytes.Length);
-                                    Buffer.BlockCopy(stringBytes, 0, buffer, seek + 2, stringBytes.Length);
-
-                                    seek = lengthBytes.Length + stringBytes.Length;
-                                }
-                            }
-                            break;
-                    }
-                }
-            }
-
-            bool bMakeBinarySuccess = dataCheckMessage == "";
-            if (bMakeBinarySuccess)
-            {
-                bw.Write(buffer, 0, seek);
-                bw.Close();
-
-                if (File.Exists(binPath))
-                {
-                    File.Delete(binPath);
-                }
-                File.Move(tempBinPath, binPath);
-            }
-            else
-            {
-                bw.Close();
-
-                if (File.Exists(tempBinPath))
-                {
-                    File.Delete(tempBinPath);
-                }
-
-                Utility.Log(dataCheckMessage, LogType.Warning);
-            }
-
-            return bMakeBinarySuccess;
-        }
-
         public bool IsTableChanged(DateTime LastWriteTime)
         {
             return LastWriteTime != CachedLastWriteTime;
         }
 
-        private void GetDataCheckMessage(ref string data, ref string dataCheckMessage, AnvilColumnHeader columnHeader, int row, string defaultValue)
-        {
-            dataCheckMessage += "[" + row + ", " + columnHeader.Name + "] 의 " + " 데이터(" + data + ")와 타입(" + Enum.GetName(typeof(EDataType), columnHeader.DataType) + ")이 다릅니다.\r\n";
-        }
-
-        private void WriteBytes(ref BinaryWriter binaryWriter, ref byte[] buffer, ref byte[] data, ref int seek, int bufferSize, ref object cellObject, int sizeOfType)
+        
+        protected void WriteBytes(ref BinaryWriter binaryWriter, ref byte[] buffer, ref byte[] data, ref int seek, int bufferSize, int sizeOfType)
         {
             int nextSeek = seek + sizeOfType;
             if (nextSeek < bufferSize)
@@ -762,9 +338,14 @@ namespace TestWPF
             }
         }
 
-        private bool IsLetterExclusiveDot(char c)
+        protected bool IsInValidInteger(char c)
         {
-            return c != '.' && char.IsLetter(c);
+            return !char.IsDigit(c);
+        }
+
+        protected bool IsInValidFloat(char c)
+        {
+            return !(c == '.' || char.IsDigit(c));
         }
 
         public bool IsValidColumnName(string columnName)
@@ -792,26 +373,7 @@ namespace TestWPF
             return ColumnNameToColumnHeader[colunmName] == IndexColumn; 
         }
 
-        public void FixResourceData()
-        {
-            Load(((App)App.Current).ExcelLoader, DataArray == null);
-
-            const int maxWorkers = 4;
-            ThreadPool.SetMinThreads(1, 1);
-            ThreadPool.SetMaxThreads(maxWorkers, maxWorkers);
-
-            List<EventWaitHandle> threadEvents = new List<EventWaitHandle>(ResourceColums.Count);
-            foreach (var pair in ResourceColums)
-            {
-                EResourcePathType resourcePathType = pair.Key;
-                int col = pair.Value.ColumnIndex;
-
-                // 멀티스레드지만 스레드가 동일한 원소에 접근하지 않아 내부에서 락을 안잡아도 됨
-                ThreadPool.QueueUserWorkItem(CheckColumnData, new ResourceCheckInfo() { ColumnIndex = col, ColumnName = pair.Value.Name, ExcelPath = FilePath, resourcePathType = pair.Key, RowCount = RowCount });
-            }
-        }
-
-        enum ECheckResult { InvalidDirectoryName, InvalidFileName, NotExistDirectory, NotExistFile, Count };
+        public enum ECheckResult { InvalidDirectoryName, InvalidFileName, NotExistDirectory, NotExistFile, Count };
         public class ResourceCheckInfo
         { 
             public string ExcelPath { get; set; }
@@ -820,167 +382,6 @@ namespace TestWPF
             public string ColumnName { get; set; }
             public int RowCount { get; set; }
         }
-
-
-        private void CheckColumnData(object obj)
-        {
-            ResourceCheckInfo resourceCheckInfo = obj as ResourceCheckInfo;
-            if(resourceCheckInfo == null)
-            {
-                return;
-            }
-
-            EResourcePathType resourcePathType = resourceCheckInfo.resourcePathType;
-            string colName = resourceCheckInfo.ColumnName;
-            string excelPath = resourceCheckInfo.ExcelPath;
-            int rowCount = resourceCheckInfo.RowCount;
-            int columnIndex = resourceCheckInfo.ColumnIndex;
-
-            for (int row = (int)EColumnHeaderElement.Count + 1; row <= rowCount; ++row)
-            {
-                object cellObject = GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex];
-                if (cellObject == null)
-                {
-                    continue;
-                }
-
-                string originCellValue = cellObject.ToString();
-                switch (resourcePathType)
-                {
-                    case EResourcePathType.FileName:
-                        {
-                            string fileName = originCellValue;
-                            if (MainWindow.allFileName.ContainsKey(fileName) == false)
-                            {
-                                string message = GetRowColumnString(excelPath, row, colName, fileName);
-                                string fileNameAsKey = Utility.NameAsKey(fileName);
-                                if (MainWindow.allFileNameAsKey.ContainsKey(fileNameAsKey))
-                                {
-                                    message += GetCheckResultAsMessage(ECheckResult.InvalidFileName, fileName, fileNameAsKey);
-                                    GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = MainWindow.allFileNameAsKey[fileNameAsKey];
-                                }
-                                else
-                                {
-                                    message += GetCheckResultAsMessage(ECheckResult.NotExistFile, fileName);
-                                }
-                            }
-                        }
-                        break;
-                    case EResourcePathType.Path:
-                        {
-                            string resourcePath = originCellValue;
-                            string fileName = Path.GetFileName(resourcePath);
-                            if (resourcePath[0] == '/')
-                            {
-                                resourcePath = resourcePath.Substring(1);
-                            }
-
-                            string[] directoryNames = Path.GetDirectoryName(resourcePath).Split('\\');
-                            if (directoryNames.Length > 0)
-                            {
-                                int offset = 0;
-                                if (directoryNames[0] == "Game")
-                                {
-                                    ++offset;
-                                }
-
-                                string message = "";
-                                // 폴더 이름 검사
-                                for (int i = directoryNames.Length - 1; i >= offset; --i)
-                                {
-                                    if (MainWindow.allDirectoryName.ContainsKey(directoryNames[i]))
-                                    {
-                                        continue;
-                                    }
-
-                                    message = (message.Length != 0) ? message : GetRowColumnString(excelPath, row, colName, resourcePath);
-
-                                    string directoryNameAsKey = Utility.NameAsKey(directoryNames[i]);
-                                    if (MainWindow.allDirectoryActualNames.ContainsKey(directoryNameAsKey))
-                                    {
-                                        if (i > 1 && MainWindow.allDirectoryParentNames[directoryNameAsKey].Contains(Utility.NameAsKey(directoryNames[i - 1])))
-                                        {
-                                            message += GetCheckResultAsMessage(ECheckResult.InvalidDirectoryName, directoryNames[i], directoryNameAsKey);
-                                            string onlyDirectroy = originCellValue.Substring(0, originCellValue.LastIndexOf('/') + 1);
-                                            GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = originCellValue = onlyDirectroy.Replace(directoryNames[i], MainWindow.allDirectoryActualNames[directoryNameAsKey]) + fileName;
-                                        }
-                                        else
-                                        {
-                                            message += GetCheckResultAsMessage(ECheckResult.NotExistDirectory, directoryNames[i]);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        message += GetCheckResultAsMessage(ECheckResult.NotExistDirectory, directoryNames[i]);
-                                    }
-                                }
-                                // 파일 이름 검사
-                                string fileNameAsKey = Utility.NameAsKey(fileName);
-                                bool bWrongLetter = MainWindow.allFileName.ContainsKey(fileName) == false;
-                                bool bExist = MainWindow.allFileNameAsKey.ContainsKey(fileNameAsKey);
-                                if (bWrongLetter && bExist)
-                                {
-                                    message = (message.Length != 0) ? message : GetRowColumnString(excelPath, row, colName, resourcePath);
-                                    message += GetCheckResultAsMessage(ECheckResult.InvalidFileName, fileName, fileNameAsKey);
-
-                                    string onlyDirectroy = originCellValue.Substring(0, originCellValue.LastIndexOf('/') + 1);
-                                    GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = onlyDirectroy + MainWindow.allFileNameAsKey[fileNameAsKey];
-                                }
-                                else if (bExist == false)
-                                {
-                                    message = (message.Length != 0) ? message : GetRowColumnString(excelPath, row, colName, resourcePath);
-                                    message += GetCheckResultAsMessage(ECheckResult.NotExistFile, fileName);
-                                }
-
-                                if (message.Length > 0)
-                                {
-                                    Utility.Log(message, LogType.Warning);
-                                }
-                            }
-                        }
-                        break;
-                }
-            }
-        }
-
-        private string GetRowColumnString(string excelPathFileName, int row, int col, string data)
-        {
-            return Path.GetFileName(excelPathFileName) + "[" + (row + (int)EColumnHeaderElement.Count) + "," + col + "]: " + data + "\r\n";
-        }
-
-        private string GetRowColumnString(string excelPathFileName, int row, string colName, string data)
-        {
-            return Path.GetFileName(excelPathFileName) + "[" + row + "," + colName + "]: " + data + "\r\n";
-        }
-
-        private string GetModifedMessage()
-        {
-            return "└ 수정되었습니다. \r\n";
-        }
-
-        private string GetCheckResultAsMessage(ECheckResult result, string str, string strAsKey = "")
-        {
-            string message = "";
-            switch (result)
-            {
-                case ECheckResult.InvalidDirectoryName:
-                    message = " 제안사항: 폴더의 대소문자 점검, " + "엑셀에 적힌 폴더이름:" + str + " ≠ " + "실제 폴더이름:" + MainWindow.allDirectoryActualNames[strAsKey];
-                    break;
-                case ECheckResult.InvalidFileName:
-                    message = " 제안사항: 파일의 대소문자 점검, " + "엑셀에 적힌 파일이름:" + str + " ≠ " + "실제 파일이름:" + MainWindow.allFileNameAsKey[strAsKey];
-                    break;
-                case ECheckResult.NotExistDirectory:
-                    message = " 존재하지 않는 디렉토리 입니다 " + str;
-                    break;
-                case ECheckResult.NotExistFile:
-                    message = " 존재하지 않는 파일입니다 " + str;
-                    break;
-            }
-
-            return message;
-        }
-
-
 
         public static Thread loadExcelThread;
         public static void LoadGameDataTables()
@@ -994,6 +395,7 @@ namespace TestWPF
                 }
 
                 Utility.Log("테이블 테이블 불러오기 완료", LogType.ProcessMessage);
+                SaveCacheData();
             });
             loadExcelThread.Start();
         }
@@ -1003,7 +405,6 @@ namespace TestWPF
             if(WorkSpace.CurrentTableType == null)
             {
                 Utility.Log("데이터 테이블 타입이 잘못되었습니다", LogType.Warning);
-                Type t = Type.GetType("TestWPF.AnvilDataTable");
                 return false;
             }
 

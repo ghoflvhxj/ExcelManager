@@ -14,14 +14,19 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Excel = Microsoft.Office.Interop.Excel;
 using System.IO;
+using System.Reflection;
+using System.Diagnostics;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace TestWPF
 {
     public partial class TablePanel : UserControl
     {
         static System.Text.RegularExpressions.Regex reg = new System.Text.RegularExpressions.Regex("[^0-9]");
+
+        private Button currentBookmarkButton;
+        private Brush currentBookmarkButtonBackGround;
 
         class BookmarkData
         {
@@ -38,7 +43,7 @@ namespace TestWPF
             if(mainWindow != null)
             {
                 mainWindow.onTraversalFinished += delegate() {
-                    ResetItemViewer(true);
+                    ResetPanel(true);
                 };
 
                 mainWindow.StateChanged += new EventHandler((object sender, EventArgs e) =>
@@ -51,6 +56,80 @@ namespace TestWPF
                     TableItemViewer.UpdateScrollViewerHeight();
                 });
             }
+
+            WorkSpace.onCurrentWorkspaceChanged += delegate ()
+            {
+                // 북마크 버튼 초기화
+                BookmarkUpdate();
+
+                // 컨텍스트 메뉴 북마크 초기화
+                int bookmarkNum = Context_BookmarkMenuItem.Items.Count;
+                for(int i=bookmarkNum-1; i>=1; --i)
+                {
+                    Context_BookmarkMenuItem.Items.RemoveAt(i);
+                }
+
+                foreach(var bookmarkPair in WorkSpace.Current.BookmarkMap)
+                {
+                    MenuItem newMenuItem = new();
+                    newMenuItem.Header = bookmarkPair.Key;
+                    newMenuItem.Click += delegate (object sender, RoutedEventArgs e)
+                    {
+                        AddBookmark(bookmarkPair.Key);
+                    };
+
+                    Context_BookmarkMenuItem.Items.Add(newMenuItem);
+                }
+
+                // 컨텍스트 메뉴 커스텀 기능 초기화
+                if (WorkSpace.Current.FunctionMap == null)
+                {
+                    return;
+                }
+
+                foreach(var pair in WorkSpace.Current.FunctionMap) // DisplayName, FunctionName
+                {
+                    MenuItem newMenuItem = new();
+                    newMenuItem.Header = pair.Key;
+                    newMenuItem.Click += delegate (object sender, RoutedEventArgs e)
+                    {
+                        if(TableItemViewer.SelectedItemList == null || TableItemViewer.SelectedItemList.Count == 0)
+                        {
+                            return;
+                        }
+
+                        List<string> outList = new();
+                        foreach (MyItem myItem in TableItemViewer.SelectedItemList)
+                        {
+                            outList.Add(myItem.Path);
+                        }
+
+                        Type tableType = GameDataTable.GetTableByPath(outList[0]).GetType();
+                        if(tableType == null)
+                        {
+                            Utility.Log("컨텍스트 메뉴 기능실행 실패1.", LogType.Warning);
+                            return;
+                        }
+
+                        MethodInfo methodInfo = null;
+                        while (tableType != null )
+                        {
+                            methodInfo = tableType.GetMethod(pair.Value);
+                            if (methodInfo != null)
+                            {
+                                methodInfo.Invoke(null, new object[] { outList });
+                                return;
+                            }
+
+                            tableType = tableType.BaseType;
+                        }
+
+                        Utility.Log("컨텍스트 메뉴 기능실행 실패2.", LogType.Warning);
+                    };
+
+                    TablePanelContextMenu.Items.Add(newMenuItem);
+                }
+            };
         }
 
         public void UpdateInfoUI()
@@ -65,7 +144,7 @@ namespace TestWPF
             }
         }
 
-        public void ResetItemViewer(bool bUseCacheData)
+        public void ResetPanel(bool bUseCacheData)
         {
             if(GameDataTable.ResetGameDataTableMap() == false)
             {
@@ -77,8 +156,26 @@ namespace TestWPF
                 GameDataTable.LoadCacheData();
             }
 
+            BookmarkUpdate();
             InitializeTableItems(MExcel.excelPaths.ToList());
 
+            GameDataTable.LoadGameDataTables();
+        }
+
+        public void AddBookmark(string bookrmarkName)
+        {
+            WorkSpace newWorkSapce = (WorkSpace)WorkSpace.Current.Clone();
+            newWorkSapce.BookmarkMap.TryAdd(bookrmarkName, new());
+
+            foreach (MyItem selectedItem in TableItemViewer.SelectedItemList)
+            {
+                newWorkSapce.BookmarkMap[bookrmarkName].Add(selectedItem.FileName);
+            }
+            WorkSpace.Current = newWorkSapce;
+        }
+
+        public void BookmarkUpdate()
+        {
             CustomPanel.Children.Clear();
             foreach (var pair in WorkSpace.Current.BookmarkMap)
             {
@@ -99,10 +196,9 @@ namespace TestWPF
                     }
 
                     InitializeTableItems(excelPathList);
+                    OnButtonClicked(sender, e);
                 };
             }
-
-            GameDataTable.LoadGameDataTables();
         }
 
         public void InitializeTableItems(List<string> excelPathList)
@@ -159,33 +255,14 @@ namespace TestWPF
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            //bool bIsAllSelectedItemsBookmarekd = true;
-            //foreach (MyItem selectedItem in TableItemViewer.SelectedItemList)
-            //{
-            //    if (selectedItem.BookMarked == false)
-            //    {
-            //        bIsAllSelectedItemsBookmarekd = false;
-            //        break;
-            //    }
-            //}
+            TextInputDialog dlg = new("새로운 북마크 생성");
 
-            //foreach (MyItem selectedItem in TableItemViewer.SelectedItemList)
-            //{
-            //    selectedItem.SetBookmark(!bIsAllSelectedItemsBookmarekd);
-            //}
-
-            string bookmarkName = "";
-
-            if (WorkSpace.Current.BookmarkMap.ContainsKey(bookmarkName) == false)
+            dlg.onClicked += delegate ()
             {
-                WorkSpace.Current.BookmarkMap.Add(bookmarkName, new());
-            }
+                AddBookmark(dlg.InputText);
+            };
 
-            foreach(MyItem selectedItem in TableItemViewer.SelectedItemList)
-            {
-                WorkSpace.Current.BookmarkMap[bookmarkName].Add(selectedItem.FileName);
-            }
-
+            dlg.Show();
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)
@@ -257,7 +334,7 @@ namespace TestWPF
                 outList.Add(item.Path);
             }
 
-            GameDataTable.MakeBinaryFiles(outList, null, null);
+            AnvilTeamTable.MakeBinaryFiles(outList);
         }
 
         private void BookMarkedTableListViewer_MouseEnter(object sender, MouseEventArgs e)
@@ -282,13 +359,36 @@ namespace TestWPF
         {
             foreach (MyItem tableItem in TableItemViewer.SelectedItemList)
             {
-                GameDataTable.GetTableByName(tableItem.FileName).FixResourceData();
+                //GameDataTable.GetTableByName(tableItem.FileName).FixResourceData();
             }
         }
 
         public void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            string docPath = System.IO.Path.Combine(WorkSpace.Current.ContentPath, "Doc");
+            if (System.IO.Directory.Exists(docPath) == false)
+            {
+                return;
+            }
 
+            Process.Start("explorer.exe", docPath);
+        }
+
+        public void OnButtonClicked(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            if(button == null)
+            {
+                return;
+            }
+
+            if(currentBookmarkButton != null)
+            {
+                currentBookmarkButton.Style = currentBookmarkButton.Parent == CustomPanel ? this.FindResource("RoundButton") as Style : this.FindResource("RoundSystemButton") as Style;
+            }
+
+            currentBookmarkButton = button;
+            currentBookmarkButton.Style = this.FindResource("CurrentButton") as Style;
         }
 
         private void Label_MouseEnter(object sender, MouseEventArgs e)
@@ -298,8 +398,8 @@ namespace TestWPF
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            // 리로드 테스트
             InitializeTableItems(MExcel.excelPaths.ToList());
+            OnButtonClicked(sender, e);
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)

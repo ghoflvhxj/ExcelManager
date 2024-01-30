@@ -14,6 +14,8 @@
                 <RowDefinition Height="3*"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
+            <Image x:Name="FailedIcon" MaxWidth="30" MaxHeight="30" HorizontalAlignment="Right" VerticalAlignment="Top" MinWidth="20" MinHeight="20" Width="30" Height="30" Source="/Source/CommonControl/Failed.png" Panel.ZIndex="1" d:Visibility="Visible">
+            </Image>
             <Image x:Name="LoadingIcon" MaxWidth="30" MaxHeight="30" HorizontalAlignment="Right" VerticalAlignment="Top" MinWidth="20" MinHeight="20" Width="30" Height="30" Source="/Source/CommonControl/Loading.PNG" Panel.ZIndex="1" d:Visibility="Visible">
             </Image>
             <Image x:Name="ExcelIcon" Source="/Source/CommonControl/Excel.png">

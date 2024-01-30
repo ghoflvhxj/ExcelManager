@@ -2,11 +2,15 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_LastSelectedProfileId>C:\Users\mkh2022\source\repos\ExcelManager\TestWPF\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
+    <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
     <Compile Update="Source\CommonControl\ItemViewer.xaml.cs" />
     <Compile Update="Source\CommonControl\TestControl.xaml.cs" />
+    <Compile Update="Source\Panels\BookmarkPanel.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Source\Panels\EditorPanel.xaml.cs" />
     <Compile Update="Source\Panels\TablePanel\TablePanel.xaml.cs" />
     <Compile Update="Source\CommonControl\MyItem.xaml.cs" />
@@ -15,6 +19,9 @@
     <Compile Update="Source\Window\CheckBoxSelector.xaml.cs" />
     <Compile Update="Source\Window\TableReferenceModifier.xaml.cs" />
     <Compile Update="Source\Window\TableViewer.xaml.cs" />
+    <Compile Update="Source\Window\TextInputDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="MainWindow.xaml">
@@ -22,11 +29,17 @@
     </Page>
     <Page Update="Source\CommonControl\ItemViewer.xaml" />
     <Page Update="Source\CommonControl\TestControl.xaml" />
+    <Page Update="Source\Panels\BookmarkPanel.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Source\Panels\EditorPanel.xaml" />
     <Page Update="Source\Panels\TablePanel\TablePanel.xaml" />
     <Page Update="Source\CommonControl\MyItem.xaml" />
     <Page Update="Source\Panels\TableReferenceModifyPanel\Control\TableReferenceModfiyPanelItem.xaml" />
     <Page Update="Source\Panels\TableReferenceModifyPanel\TableReferenceModifyPanel.xaml" />
+    <Page Update="Source\Window\TextInputDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Themes\Generic.xaml">
       <SubType>Designer</SubType>
     </Page>

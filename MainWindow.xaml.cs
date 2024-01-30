@@ -287,7 +287,6 @@ namespace TestWPF
 
         private void Button_MouseLeftButtonDown2(object sender, MouseButtonEventArgs e)
         {
-            MyTablePanel.ResetItemViewer(false);
             //foreach (var excelFileName in MExcel.excelFileNames)
             //{
             //    GameDataTable.GetTableByName(excelFileName).Load(((App)Application.Current).ExcelLoader, true);

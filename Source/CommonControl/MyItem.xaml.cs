@@ -74,7 +74,7 @@ namespace TestWPF
 
         public bool BindGameDataTable(string newPath)
         {
-            GameDataTable gameDataTable = GameDataTable.GetGameDataTableByPath(newPath);
+            GameDataTable gameDataTable = GameDataTable.GetTableByPath(newPath);
             if (gameDataTable == null)
             {
                 Utility.Log("바인딩 할 게임 테이블을 찾을 수 없습니다. 경로:" + newPath, LogType.Warning);
@@ -108,12 +108,19 @@ namespace TestWPF
             {
                 case EGameDataTableLoadState.Wait:
                     LoadingIcon.Visibility = Visibility.Visible;
+                    FailedIcon.Visibility = Visibility.Collapsed;
                     break;
                 case EGameDataTableLoadState.Loading:
                     LoadingIcon.Visibility = Visibility.Visible;
+                    FailedIcon.Visibility = Visibility.Collapsed;
+                    break;
+                case EGameDataTableLoadState.Failed:
+                    LoadingIcon.Visibility = Visibility.Collapsed;
+                    FailedIcon.Visibility = Visibility.Visible;
                     break;
                 case EGameDataTableLoadState.Complete:
                     LoadingIcon.Visibility = Visibility.Collapsed;
+                    FailedIcon.Visibility = Visibility.Collapsed;
                     break;
             }
         }

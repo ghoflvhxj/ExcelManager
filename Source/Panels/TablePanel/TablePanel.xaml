@@ -12,37 +12,23 @@
             </Style.Resources>
             <Setter Property="BorderThickness" Value="0,0,0,0" />
             <Setter Property="Background" Value="Gray"></Setter>
-                <!--<Setter Property="Background">
-                <Setter.Value>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0,0.5">
-                        <LinearGradientBrush.Transform>
-                            <TransformGroup>
-                                <ScaleTransform/>
-                                <SkewTransform/>
-                                <RotateTransform Angle="0"/>
-                                <TranslateTransform/>
-                            </TransformGroup>
-                        </LinearGradientBrush.Transform>
-                        <GradientStop Color="White" Offset="0"/>
-                        <GradientStop Color="#FF575757" Offset="1"/>
-                    </LinearGradientBrush>
-                </Setter.Value>
-            </Setter>-->
             <Setter Property="Margin" Value="2,0,2,2"/>
             <Setter Property="Padding" Value="1,5,1,5"/>
             <Setter Property="Foreground" Value="Black"/>
         </Style>
         <Style TargetType="Button" x:Key="RoundButton">
-            <Style.Resources>
-                <!--<Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="5" />
-                </Style>-->
-            </Style.Resources>
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Background" Value="#FFB2B2B2"/>
             <Setter Property="Margin" Value="2,0,2,2"/>
             <Setter Property="Padding" Value="1,5,1,5"/>
             <Setter Property="Foreground" Value="Black"/>
+        </Style>
+        <Style TargetType="Button" x:Key="CurrentButton">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="#FFFF4820"/>
+            <Setter Property="Margin" Value="2,0,2,2"/>
+            <Setter Property="Padding" Value="1,5,1,5"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
         <Style TargetType="StackPanel" x:Key="ButtonStackPanel">
             <Style.Resources>
@@ -52,23 +38,9 @@
                 </Style>
             </Style.Resources>
             <Setter Property="Background" Value="#FFAED3FF"></Setter>
-            <!--<Setter Property="Padding" Value="1,5,1,5"/>-->
         </Style>
     </UserControl.Resources>
-    <UserControl.ContextMenu>
-        <ContextMenu>
-            <MenuItem Header="열기" Click="MenuItem_Click_4"></MenuItem>
-            <MenuItem Header="북마크에 추가하기" Click="MenuItem_Click"></MenuItem>
-            <Separator/>
-            <MenuItem Header="참조된 테이블을 연결시켜 보기" Click="MenuItem_Click_1"></MenuItem>
-            <MenuItem Header="칼럼 편집"></MenuItem>
-            <MenuItem Header="참조 목록 편집" Click="MenuItem_Click_2"></MenuItem>
-            <Separator/>
-            <MenuItem Header="바이너리 생성" Click="MenuItem_Click_3"></MenuItem>
-            <MenuItem Header="리소스 검사" Click="MenuItem_Click_5"></MenuItem>
-            <Separator/>
-        </ContextMenu>
-    </UserControl.ContextMenu>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"></RowDefinition>
@@ -81,7 +53,7 @@
                     <ColumnDefinition></ColumnDefinition>
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <Button Click="Button_Click_1" Grid.Column="0">바이너리 생성</Button>
+                <Button Click="Button_Click_1" Grid.Column="0">Doc</Button>
                 <Button Click="Button_Click_1" Grid.Column="1">테스트2</Button>
                 <Button Click="Button_Click_1" Grid.Column="2">테스트3</Button>
             </Grid>
@@ -95,8 +67,8 @@
             <DockPanel Grid.Column="0">
                 <!--<Border BorderThickness="1" CornerRadius="8" Background="AliceBlue" DockPanel.Dock="Top" BorderBrush="#FF5400B9">-->
                 <UniformGrid x:Name="SystemFixedPanel" Background="#FFCFCFCF" DockPanel.Dock="Top" Rows="2">
-                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundSystemButton}" Click="Button_Click">전체</Button>
-                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundSystemButton}" Click="Button_Click_2">최근 사용</Button>
+                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundSystemButton}" Click="Button_Click">전체</Button>
+                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundSystemButton}" Click="Button_Click_2">최근 사용</Button>
                 </UniformGrid>
                 <!--</Border>-->
                 <!--<Border BorderThickness="1" CornerRadius="8" Background="AliceBlue" DockPanel.Dock="Bottom">-->
@@ -109,6 +81,19 @@
             </DockPanel>
 
             <Border BorderThickness="1" CornerRadius="8" Grid.Column="1" Background="AliceBlue">
+                <Border.ContextMenu>
+                    <ContextMenu x:Name="TablePanelContextMenu">
+                        <MenuItem Header="열기" Click="MenuItem_Click_4"></MenuItem>
+                        <MenuItem Header="북마크에 추가하기" x:Name="Context_BookmarkMenuItem">
+                            <MenuItem Header="새로 만들기"  Click="MenuItem_Click"></MenuItem>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="참조된 테이블을 연결시켜 보기" Click="MenuItem_Click_1"></MenuItem>
+                        <MenuItem Header="칼럼 편집"></MenuItem>
+                        <MenuItem Header="참조 목록 편집" Click="MenuItem_Click_2"></MenuItem>
+                        <Separator/>
+                    </ContextMenu>
+                </Border.ContextMenu>
                 <local:ItemViewer x:Name="TableItemViewer" MouseEnter="TableItemViewer_MouseEnter" GotFocus="TableItemViewer_GotFocus"></local:ItemViewer>
             </Border>
         </Grid>
