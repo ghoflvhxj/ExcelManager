@@ -26,5 +26,9 @@
             "Name" : "StructType",   
             "Index" : 3
         }
-    ]
+    ],
+
+    "FunctionMap" : { 
+        "바이너리 생성" : "MakeBinaryFiles"
+    }
 }
