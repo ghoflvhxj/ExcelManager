@@ -31,11 +31,11 @@ namespace TestWPF
                 int col = pair.Value.ColumnIndex;
 
                 // 멀티스레드지만 스레드가 동일한 원소에 접근하지 않아 내부에서 락을 안잡아도 됨
-                ThreadPool.QueueUserWorkItem(CheckColumnData, new ResourceCheckInfo() { ColumnIndex = col, ColumnName = pair.Value.Name, ExcelPath = FilePath, resourcePathType = pair.Key, RowCount = RowCount });
+                ThreadPool.QueueUserWorkItem(CheckResourceData, new ResourceCheckInfo() { ColumnIndex = col, ColumnName = pair.Value.Name, ExcelPath = FilePath, resourcePathType = pair.Key, RowCount = RowCount });
             }
         }
 
-        private void CheckColumnData(object obj)
+        private void CheckResourceData(object obj)
         {
             ResourceCheckInfo resourceCheckInfo = obj as ResourceCheckInfo;
             if (resourceCheckInfo == null)
@@ -43,13 +43,11 @@ namespace TestWPF
                 return;
             }
 
-            EResourcePathType resourcePathType = resourceCheckInfo.resourcePathType;
             string colName = resourceCheckInfo.ColumnName;
             string excelPath = resourceCheckInfo.ExcelPath;
-            int rowCount = resourceCheckInfo.RowCount;
             int columnIndex = resourceCheckInfo.ColumnIndex;
 
-            for (int row = (int)EColumnHeaderElement.Count + 1; row <= rowCount; ++row)
+            for (int row = (int)EColumnHeaderElement.Count + 1; row <= resourceCheckInfo.RowCount; ++row)
             {
                 object cellObject = GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex];
                 if (cellObject == null)
@@ -58,7 +56,7 @@ namespace TestWPF
                 }
 
                 string originCellValue = cellObject.ToString();
-                switch (resourcePathType)
+                switch (resourceCheckInfo.resourcePathType)
                 {
                     case EResourcePathType.FileName:
                         {

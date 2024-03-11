@@ -28,6 +28,8 @@ namespace TestWPF
         private Button currentBookmarkButton;
         private Brush currentBookmarkButtonBackGround;
 
+        private List<MenuItem> contextMenuItems = new();
+
         class BookmarkData
         {
             public string TargetProjectName { get; set; }
@@ -57,43 +59,50 @@ namespace TestWPF
                 });
             }
 
-            WorkSpace.onCurrentWorkspaceChanged += delegate ()
+            WorkSpace.onCurrentWorkspaceChanged += Initialize;
+
+        }
+
+        public void Initialize()
+        {
+            // 북마크 버튼 초기화
+            BookmarkUpdate();
+
+            // 컨텍스트 메뉴 북마크 초기화
+            int bookmarkNum = Context_BookmarkMenuItem.Items.Count;
+            for (int i = bookmarkNum - 1; i >= 1; --i)
             {
-                // 북마크 버튼 초기화
-                BookmarkUpdate();
+                Context_BookmarkMenuItem.Items.RemoveAt(i);
+            }
 
-                // 컨텍스트 메뉴 북마크 초기화
-                int bookmarkNum = Context_BookmarkMenuItem.Items.Count;
-                for(int i=bookmarkNum-1; i>=1; --i)
+            foreach (var bookmarkPair in WorkSpace.Current.BookmarkMap)
+            {
+                MenuItem newMenuItem = new();
+                newMenuItem.Header = bookmarkPair.Key;
+                newMenuItem.Click += delegate (object sender, RoutedEventArgs e)
                 {
-                    Context_BookmarkMenuItem.Items.RemoveAt(i);
-                }
+                    AddBookmark(bookmarkPair.Key);
+                };
 
-                foreach(var bookmarkPair in WorkSpace.Current.BookmarkMap)
-                {
-                    MenuItem newMenuItem = new();
-                    newMenuItem.Header = bookmarkPair.Key;
-                    newMenuItem.Click += delegate (object sender, RoutedEventArgs e)
-                    {
-                        AddBookmark(bookmarkPair.Key);
-                    };
+                Context_BookmarkMenuItem.Items.Add(newMenuItem);
+            }
 
-                    Context_BookmarkMenuItem.Items.Add(newMenuItem);
-                }
+            // 컨텍스트 메뉴 커스텀 기능 초기화
+            foreach (var oldMenuItem in contextMenuItems)
+            {
+                TablePanelContextMenu.Items.Remove(oldMenuItem);
+            }
+            contextMenuItems.Clear();
 
-                // 컨텍스트 메뉴 커스텀 기능 초기화
-                if (WorkSpace.Current.FunctionMap == null)
-                {
-                    return;
-                }
-
-                foreach(var pair in WorkSpace.Current.FunctionMap) // DisplayName, FunctionName
+            if (WorkSpace.Current.FunctionMap != null)
+            {
+                foreach (var pair in WorkSpace.Current.FunctionMap) // DisplayName, FunctionName
                 {
                     MenuItem newMenuItem = new();
                     newMenuItem.Header = pair.Key;
                     newMenuItem.Click += delegate (object sender, RoutedEventArgs e)
                     {
-                        if(TableItemViewer.SelectedItemList == null || TableItemViewer.SelectedItemList.Count == 0)
+                        if (TableItemViewer.SelectedItemList == null || TableItemViewer.SelectedItemList.Count == 0)
                         {
                             return;
                         }
@@ -105,14 +114,14 @@ namespace TestWPF
                         }
 
                         Type tableType = GameDataTable.GetTableByPath(outList[0]).GetType();
-                        if(tableType == null)
+                        if (tableType == null)
                         {
                             Utility.Log("컨텍스트 메뉴 기능실행 실패1.", LogType.Warning);
                             return;
                         }
 
                         MethodInfo methodInfo = null;
-                        while (tableType != null )
+                        while (tableType != null)
                         {
                             methodInfo = tableType.GetMethod(pair.Value);
                             if (methodInfo != null)
@@ -127,9 +136,10 @@ namespace TestWPF
                         Utility.Log("컨텍스트 메뉴 기능실행 실패2.", LogType.Warning);
                     };
 
+                    contextMenuItems.Add(newMenuItem);
                     TablePanelContextMenu.Items.Add(newMenuItem);
                 }
-            };
+            }
         }
 
         public void UpdateInfoUI()
