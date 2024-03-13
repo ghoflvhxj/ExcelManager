@@ -360,7 +360,7 @@ namespace TestWPF
                                     string signRemovedString = cellToString[0] == '-' ? cellToString[1..] : cellToString;
                                     if (signRemovedString.Any(IsInValidInteger))
                                     {
-                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
+                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row);
                                     }
                                     else
                                     {
@@ -391,7 +391,7 @@ namespace TestWPF
                                     string signRemovedString = cellToString[0] == '-' ? cellToString[1..] : cellToString;
                                     if (signRemovedString.Any(IsInValidInteger))
                                     {
-                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
+                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row);
                                     }
                                     else
                                     {
@@ -417,7 +417,7 @@ namespace TestWPF
                                     }
                                     else
                                     {
-                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "false");
+                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row);
                                     }
 
                                     byte[] bytes = BitConverter.GetBytes(value);
@@ -431,7 +431,7 @@ namespace TestWPF
                                     string signRemovedString = cellToString[0] == '-' ? cellToString[1..] : cellToString;
                                     if (signRemovedString.Any(IsInValidInteger))
                                     {
-                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
+                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row);
                                     }
                                     else
                                     {
@@ -449,7 +449,7 @@ namespace TestWPF
                                     string signRemovedString = cellToString[0] == '-' ? cellToString[1..] : cellToString;
                                     if (signRemovedString.Any(IsInValidInteger))
                                     {
-                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
+                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row);
                                     }
                                     else
                                     {
@@ -467,7 +467,7 @@ namespace TestWPF
                                     string signRemovedString = cellToString[0] == '-' ? cellToString[1..] : cellToString;
                                     if (signRemovedString.Any(IsInValidFloat))
                                     {
-                                        GetDataCheckMessage(ref signRemovedString, ref dataCheckMessage, columnHeader, row, "0");
+                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row);
                                     }
                                     else
                                     {
@@ -485,7 +485,7 @@ namespace TestWPF
                                     string signRemovedString = cellToString[0] == '-' ? cellToString[1..] : cellToString;
                                     if (signRemovedString.Any(IsInValidFloat))
                                     {
-                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, "0");
+                                        GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row);
                                     }
                                     else
                                     {
@@ -512,7 +512,7 @@ namespace TestWPF
                                         }
                                         else
                                         {
-                                            dataCheckMessage += "[" + row + ", " + columnHeader.Name + "] 의 " + key + "는 없는 enum입니다.\r\n";
+                                            GetDataCheckMessage(ref cellToString, ref dataCheckMessage, columnHeader, row, key);
                                         }
                                     }
 
@@ -575,10 +575,22 @@ namespace TestWPF
             
             return bMakeBinarySuccess;
         }
-
-        private void GetDataCheckMessage(ref string data, ref string dataCheckMessage, AnvilColumnHeader columnHeader, int row, string defaultValue)
+        
+        private void GetDataCheckMessage(ref string data, ref string dataCheckMessage, AnvilColumnHeader columnHeader, int row, string enumKey = "")
         {
-            dataCheckMessage += "[" + row + ", " + columnHeader.Name + "] 의 " + " 데이터(" + data + ")와 타입(" + Enum.GetName(typeof(EDataType), columnHeader.DataType) + ")이 다릅니다.\r\n";
+            switch(columnHeader.DataType)
+            {
+                case EDataType.Enum:
+                {
+                    dataCheckMessage += Utility.GetOnlyFileName(FilePath) + "[" + DataArray[row, IndexColumn.ColumnIndex].ToString() + ", " + columnHeader.Name + "] 의 " + enumKey + "는 없는 enum입니다.\r\n";
+                }
+                break;
+                default:
+                {
+                    dataCheckMessage += Utility.GetOnlyFileName(FilePath) + "[" + DataArray[row, IndexColumn.ColumnIndex].ToString() + ", " + columnHeader.Name + "] 의 " + " 데이터(" + data + ")와 타입(" + Enum.GetName(typeof(EDataType), columnHeader.DataType) + ")이 다릅니다.\r\n";
+                }
+                break;
+            }
         }
 
         public static void FixResources(List<string> excelFilePath)
