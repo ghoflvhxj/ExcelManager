@@ -29,6 +29,7 @@
     ],
 
     "FunctionMap" : { 
-        "바이너리 생성" : "MakeBinaryFiles"
+        "바이너리 생성" : "MakeBinaryFiles",
+        "리소스 검사" : "FixResources"
     }
 }
