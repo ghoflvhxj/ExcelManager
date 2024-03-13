@@ -18,7 +18,7 @@ namespace TestWPF
 {
     public enum LogType
     {
-        Default,
+        Debug,
         Message,
         Warning,
         ProcessMessage,
@@ -99,10 +99,10 @@ namespace TestWPF
             return columnName;
         }
 
-        public static void Log(string log, LogType logType = LogType.Default)
+        public static void Log(string log, LogType logType = LogType.Debug)
         {
 #if (!DEBUG)
-            if(logType == LogType.Default)
+            if(logType == LogType.Debug)
             {
                 return;
             }

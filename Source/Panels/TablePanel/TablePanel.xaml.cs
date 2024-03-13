@@ -226,7 +226,7 @@ namespace TestWPF
                     continue;
                 }
 
-                Utility.Log("TablePanel에 아이템 추가" + excelPath, LogType.Warning);
+                Utility.Log("TablePanel에 아이템 추가" + excelPath);
             }
 
             // 스크롤 뷰 높이 업데이트
