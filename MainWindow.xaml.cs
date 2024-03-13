@@ -351,10 +351,10 @@ namespace TestWPF
             //}
         }
 
-        public void Log(string log, LogType logType = LogType.Default)
+        public void Log(string log, LogType logType = LogType.Debug)
         {
 #if (!DEBUG)
-            if(logType == LogType.Default)
+            if(logType == LogType.Debug)
             {
                 return;
             }
@@ -367,7 +367,7 @@ namespace TestWPF
             Brush brush = null;
             switch (logType)
             {
-                case LogType.Default:
+                case LogType.Debug:
                     brush = Brushes.Black;
                     break;
                 case LogType.Message:
