@@ -68,12 +68,6 @@ namespace TestWPF
         {
             LoadWorkspace(GetWorkspacePath(true));
 
-            WorkSpace.onCurrentWorkspaceChanged += delegate ()
-            {
-                Utility.AsyncJsonSerialize<WorkSpace>(GetWorkspacePath(true), WorkSpace.Current);
-            };
-
-
             LogTextBox.AppendText(string.Join("\r\n", logQueue));
 #if (!DEBUG)
             DevelopPanel.Visibility = Visibility.Collapsed;
@@ -124,10 +118,21 @@ namespace TestWPF
 
                     TravelContentDirectories();
                     //MyEditorPannel.DelayCheckUpdate();
+
+                    WorkSpace.onCurrentWorkspaceChanged += delegate ()
+                    {
+                        Utility.AsyncJsonSerialize<WorkSpace>(GetWorkspacePath(true), WorkSpace.Current);
+                    };
+
                     break;
                 }
                 case WorkSpace.ELoadResult.InvalidData:
                 {
+                    WorkSpace.onCurrentWorkspaceChanged += delegate ()
+                    {
+                        Utility.AsyncJsonSerialize<WorkSpace>(GetWorkspacePath(true), WorkSpace.Current);
+                    };
+
                     if (MessageBoxResult.OK == MessageBox.Show("프로젝트 경로를 설정해야 합니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly))
                     {
                         SelectProjectFileAndTravel(true);
