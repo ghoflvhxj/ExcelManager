@@ -160,6 +160,10 @@ namespace TestWPF
                     return false;
                 }
             }
+            else
+            {
+                Utility.Log(fileName + " 캐시 로드 완료");
+            }
 
             ChangeLoadState(EGameDataTableLoadState.Complete);
             Utility.Log(fileName + " 로드 완료", LogType.Message);
@@ -186,6 +190,7 @@ namespace TestWPF
 
                 CopyDataFromWorkSheet(range);
                 MakeInfo(range);
+                workBook.Close();
                 Marshal.ReleaseComObject(workBook);
                 Marshal.ReleaseComObject(workSheet);
                 return true;
@@ -209,7 +214,6 @@ namespace TestWPF
             }
         }
 
-        // 엑셀에서 데이터를 복사해옵니다.
         public virtual void CopyDataFromWorkSheet(Excel.Range range)
         {
             DataArray = (object[,])range.Value2;
