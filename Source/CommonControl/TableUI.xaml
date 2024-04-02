@@ -1,0 +1,35 @@
+﻿<UserControl x:Class="TestWPF.TableUI"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TestWPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style TargetType="TextBox" x:Key="ColumnTextBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+        </Style>
+    </UserControl.Resources>
+    
+    <Border BorderBrush="#FF002576">
+        <Grid VerticalAlignment="Top" x:Name="Grid">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"></RowDefinition>
+                <RowDefinition Height="20"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <TextBox x:Name="TableName" Grid.Row="0" d:Text="테이블이름" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="20" >
+                <TextBox.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FFCCF8FF"/>
+                        <GradientStop Color="#FF12B5CF" Offset="1"/>
+                    </LinearGradientBrush>
+                </TextBox.Background>
+            </TextBox>
+            <d:TextBox Grid.Row="1" Text="테이블 칼럼" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="White"></d:TextBox>
+        </Grid>
+    </Border>
+</UserControl>

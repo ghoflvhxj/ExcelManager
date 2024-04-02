@@ -287,6 +287,15 @@ namespace TestWPF
             //}
 
             //t.Init(selectedTablePathList);
+
+            GameDataTable table = GameDataTable.GetTableByPath(TableItemViewer.SelectedItemList.First().Path);
+            if(table != null)
+            {
+                foreach(var t in table.ResourceColums)
+                {
+                    Utility.Log(t.Value.Name);
+                }
+            }
         }
 
         private void MenuItem_Click_2(object sender, RoutedEventArgs e)

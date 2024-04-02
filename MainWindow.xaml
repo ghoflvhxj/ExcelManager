@@ -59,7 +59,7 @@
                                 <ColumnDefinition></ColumnDefinition>
                                 <ColumnDefinition></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <Button  Grid.Column="0" Click="Button_Click">테스트 버튼</Button>
+                            <Button  Grid.Column="0" Click="TestButton_Click">테스트 버튼</Button>
                         </Grid>
                     </Grid>
                 </GroupBox>

@@ -7,6 +7,9 @@
   <ItemGroup />
   <ItemGroup>
     <Compile Update="Source\CommonControl\ItemViewer.xaml.cs" />
+    <Compile Update="Source\CommonControl\TableUI.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Source\CommonControl\TestControl.xaml.cs" />
     <Compile Update="Source\Panels\BookmarkPanel.xaml.cs">
       <SubType>Code</SubType>
@@ -19,6 +22,9 @@
     <Compile Update="Source\Window\CheckBoxSelector.xaml.cs" />
     <Compile Update="Source\Window\TableReferenceModifier.xaml.cs" />
     <Compile Update="Source\Window\TableViewer.xaml.cs" />
+    <Compile Update="Source\Window\TestWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Source\Window\TextInputDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -28,6 +34,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Source\CommonControl\ItemViewer.xaml" />
+    <Page Update="Source\CommonControl\TableUI.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Source\CommonControl\TestControl.xaml" />
     <Page Update="Source\Panels\BookmarkPanel.xaml">
       <SubType>Designer</SubType>
@@ -37,6 +46,9 @@
     <Page Update="Source\CommonControl\MyItem.xaml" />
     <Page Update="Source\Panels\TableReferenceModifyPanel\Control\TableReferenceModfiyPanelItem.xaml" />
     <Page Update="Source\Panels\TableReferenceModifyPanel\TableReferenceModifyPanel.xaml" />
+    <Page Update="Source\Window\TestWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Source\Window\TextInputDialog.xaml">
       <SubType>Designer</SubType>
     </Page>

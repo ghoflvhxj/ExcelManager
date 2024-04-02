@@ -320,7 +320,7 @@ namespace TestWPF
 #endif
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void TestButton_Click(object sender, RoutedEventArgs e)
         {
             Log("DNS 이용 아이피", LogType.Message);
             foreach (IPAddress ip in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
@@ -339,7 +339,11 @@ namespace TestWPF
                 Log(endPoint.Address.ToString());
             }
 
-            MyTablePanel.TableItemViewer.ResizeItem(50, 70);
+            TestWindow a = new();
+            a.Show();
+
+            // 테이블 아이템패널 리사이즈
+            //MyTablePanel.TableItemViewer.ResizeItem(50, 70);
 
             // 휴스톤이 켜져있는지 검사
             //string remoteSystem = "remoteSystemName";
