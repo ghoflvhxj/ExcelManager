@@ -17,10 +17,42 @@ using System.Windows.Media.Animation;
 
 namespace TestWPF
 {
-    public class Selectable<T> : UserControl
+    public class Selector
     {
-        public HashSet<T> SelectedItemList { get; set; } = new();
+        public HashSet<MyItem> SelectedItemList { get; set; } = new();
 
+        public MyItem MouseHoveredItem { get; set; }
+
+        public bool DragEnable { get; set; }
+        public HashSet<MyItem> DragItemList { get; set; } = new();
+
+        public void AddSelectableItem(MyItem newItem)
+        {
+            //MyItem newItem = tNewItem as MyItem;
+            newItem.OnMouseHoverChanged += delegate (bool bEnetered)
+            {
+                if (bEnetered)
+                {
+                    MouseHoveredItem = newItem;
+                }
+                else
+                {
+                    MouseHoveredItem = null;
+                }
+            };
+        }
+
+        public void Clear()
+        {
+            foreach (MyItem myItem in SelectedItemList)
+            {
+                Utility.Log(myItem.FileName + "언셀렉트");
+                myItem.UnSelect();
+            }
+
+            SelectedItemList.Clear();
+            DragItemList.Clear();
+        }
     }
 
     public partial class ItemViewer : UserControl
@@ -31,7 +63,7 @@ namespace TestWPF
 
         // 아이템
         public HashSet<MyItem> SelectedItemList { get; set; } = new();
-        public MyItem MouseEnteredItem { get; set; }
+        public MyItem MouseHoveredItem { get; set; }
 
         // 드래그 선택
         public Point DragStart { get; set; }
@@ -141,11 +173,11 @@ namespace TestWPF
             {
                 if (bEnetered)
                 {
-                    MouseEnteredItem = newItem;
+                    MouseHoveredItem = newItem;
                 }
                 else
                 {
-                    MouseEnteredItem = null;
+                    MouseHoveredItem = null;
                 }
             };
 
@@ -157,10 +189,9 @@ namespace TestWPF
         {
             SelectedItemList.Clear();
             //DragItemList.Clear();
+            MouseHoveredItem = null;
 
             ItemListWrapPanel.Children.Clear();
-
-            MouseEnteredItem = null;
         }
 
         public void ResizeItem(int newWidth, int newHeight)
@@ -268,7 +299,7 @@ namespace TestWPF
 
             //DragItemList.Clear();
 
-            if (MouseEnteredItem == null)
+            if (MouseHoveredItem == null)
             {
                 if (Keyboard.IsKeyDown(Key.LeftCtrl) == false && Keyboard.IsKeyDown(Key.LeftShift) == false)
                 {
@@ -306,25 +337,25 @@ namespace TestWPF
                 ClearSelectedItems();
             }
 
-            if (MouseEnteredItem != null)
+            if (MouseHoveredItem != null)
             {
-                if(SelectedItemList.Contains(MouseEnteredItem))
+                if(SelectedItemList.Contains(MouseHoveredItem))
                 {
-                    MouseEnteredItem.UnSelect();
-                    SelectedItemList.Remove(MouseEnteredItem);
-                    Utility.Log(MouseEnteredItem.FileName + "제거");
+                    MouseHoveredItem.UnSelect();
+                    SelectedItemList.Remove(MouseHoveredItem);
+                    Utility.Log(MouseHoveredItem.FileName + "제거");
                 }
                 else
                 {
-                    MouseEnteredItem.Select();
-                    SelectedItemList.Add(MouseEnteredItem);
-                    Utility.Log(MouseEnteredItem.FileName + "추가");
+                    MouseHoveredItem.Select();
+                    SelectedItemList.Add(MouseHoveredItem);
+                    Utility.Log(MouseHoveredItem.FileName + "추가");
                 }
             }
 
-            if (e.ClickCount >= 2 && MouseEnteredItem != null)
+            if (e.ClickCount >= 2 && MouseHoveredItem != null)
             {
-                Utility.ExecuteProcess(MouseEnteredItem.Path);
+                Utility.ExecuteProcess(MouseHoveredItem.Path);
             }
 
             Utility.Log("그리드 눌림");
@@ -342,18 +373,18 @@ namespace TestWPF
 
         private void Grid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if(MouseEnteredItem == null)
+            if(MouseHoveredItem == null)
             {
                 return;
             }
 
-            if(SelectedItemList.Contains(MouseEnteredItem) == false)
+            if(SelectedItemList.Contains(MouseHoveredItem) == false)
             {
                 ClearSelectedItems();
             }
 
-            SelectedItemList.Add(MouseEnteredItem);
-            MouseEnteredItem.Select();
+            SelectedItemList.Add(MouseHoveredItem);
+            MouseHoveredItem.Select();
         }
 
         char searchKey = ' ';
