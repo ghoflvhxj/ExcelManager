@@ -17,9 +17,12 @@ using System.Windows.Media.Animation;
 
 namespace TestWPF
 {
-    /// <summary>
-    /// ItemViewer.xaml에 대한 상호 작용 논리
-    /// </summary>
+    public class Selectable<T> : UserControl
+    {
+        public HashSet<T> SelectedItemList { get; set; } = new();
+
+    }
+
     public partial class ItemViewer : UserControl
     {
         public string Title { get; set; }
@@ -57,30 +60,70 @@ namespace TestWPF
                     itemRect.Location = newItem.TranslatePoint(new Point(0, 0), ItemListWrapPanel);
                     itemRect.Size = new Size(newItem.ActualWidth, newItem.ActualHeight);
 
-                    if (itemRect.IntersectsWith(dragRect))
+                    if (Keyboard.IsKeyDown(Key.LeftShift))
                     {
-                        if (DragItemList.Contains(newItem) == false)
+                        if (itemRect.IntersectsWith(dragRect))
                         {
-                            newItem.ToggleSelect();
-                            DragItemList.Add(newItem);
+                            newItem.Select();
+                            SelectedItemList.Add(newItem);
                         }
                     }
-                    else
+                    else if (Keyboard.IsKeyDown(Key.LeftCtrl))
                     {
-                        if (DragItemList.Contains(newItem))
+                        if (itemRect.IntersectsWith(dragRect))
                         {
-                            newItem.ToggleSelect();
-                            DragItemList.Remove(newItem);
-                        }
-                    }
+                            if(DragItemList.Contains(newItem) == false)
+                            {
+                                if (SelectedItemList.Contains(newItem) == false)
+                                {
+                                    newItem.Select();
+                                    SelectedItemList.Add(newItem);
+                                }
+                                else
+                                {
+                                    newItem.UnSelect();
+                                    SelectedItemList.Remove(newItem);
+                                }
+                                DragItemList.Add(newItem);
+                            }
 
-                    if (newItem.Selected)
-                    {
-                        SelectedItemList.Add(newItem);
+
+                        }
+                        else if (itemRect.IntersectsWith(dragRect) == false)
+                        {
+                            if (DragItemList.Contains(newItem))
+                            {
+                                newItem.ToggleSelect();
+                                DragItemList.Remove(newItem);
+                                if(newItem.Selected)
+                                {
+                                    SelectedItemList.Add(newItem);
+                                }
+                                else
+                                {
+                                    SelectedItemList.Remove(newItem);
+                                }
+                            }
+                        }
                     }
                     else
                     {
-                        SelectedItemList.Remove(newItem);
+                        if (itemRect.IntersectsWith(dragRect))
+                        {
+                            if (SelectedItemList.Contains(newItem) == false)
+                            {
+                                newItem.ToggleSelect();
+                                SelectedItemList.Add(newItem);
+                            }
+                        }
+                        else
+                        {
+                            if (SelectedItemList.Contains(newItem))
+                            {
+                                newItem.ToggleSelect();
+                                SelectedItemList.Remove(newItem);
+                            }
+                        }
                     }
                 }
             };
@@ -113,7 +156,7 @@ namespace TestWPF
         public void ClearItems()
         {
             SelectedItemList.Clear();
-            DragItemList.Clear();
+            //DragItemList.Clear();
 
             ItemListWrapPanel.Children.Clear();
 
@@ -166,6 +209,7 @@ namespace TestWPF
             }
 
             SelectedItemList.Clear();
+            //DragItemList.Clear();
         }
 
         public void ToggleSelection()
@@ -222,11 +266,11 @@ namespace TestWPF
         {
             Utility.Log("캔바스 눌림");
 
-            DragItemList.Clear();
+            //DragItemList.Clear();
 
             if (MouseEnteredItem == null)
             {
-                if (Keyboard.IsKeyDown(Key.LeftCtrl) == false)
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) == false && Keyboard.IsKeyDown(Key.LeftShift) == false)
                 {
                     ClearSelectedItems();
                 }
@@ -257,10 +301,9 @@ namespace TestWPF
         {
             DragStart = Mouse.GetPosition(ItemListWrapPanel);
 
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) == false)
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) == false && Keyboard.IsKeyDown(Key.LeftShift) == false)
             {
                 ClearSelectedItems();
-                DragItemList.Clear();
             }
 
             if (MouseEnteredItem != null)
