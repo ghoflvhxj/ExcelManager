@@ -44,6 +44,11 @@ namespace TestWPF
         public MainWindow()
         {
             InitializeComponent();
+
+#if DEBUG == false
+            //RightGrid.RowDefinitions(1);
+            RightGrid.RowDefinitions[1].Height = new GridLength(0, GridUnitType.Star);
+#endif
         }
 
         private void Label_MouseEnter(object sender, MouseEventArgs e)
@@ -396,17 +401,17 @@ namespace TestWPF
 
         private void Window_Activated(object sender, EventArgs e)
         {
-            if (MyEditorPannel == null)
-            {
-                return;
-            }
+            //if (MyEditorPannel == null)
+            //{
+            //    return;
+            //}
 
-            if (WorkSpace.Current == null)
-            {
-                return;
-            }
+            //if (WorkSpace.Current == null)
+            //{
+            //    return;
+            //}
 
-            MyEditorPannel.DelayCheckUpdate();
+            //MyEditorPannel.DelayCheckUpdate();
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)

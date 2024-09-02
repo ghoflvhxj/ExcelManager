@@ -17,7 +17,7 @@ using System.Windows.Media.Animation;
 
 namespace TestWPF
 {
-    public class Selector
+    public class USelector
     {
         public HashSet<MyItem> SelectedItemList { get; set; } = new();
 
@@ -61,9 +61,11 @@ namespace TestWPF
 
         public bool MouseEnteredByChild;
 
+        public USelector Selector { get; } = new();
+
         // 아이템
-        public HashSet<MyItem> SelectedItemList { get; set; } = new();
-        public MyItem MouseHoveredItem { get; set; }
+        public HashSet<MyItem> SelectedItemList { get { return Selector.SelectedItemList; } }
+        public MyItem MouseHoveredItem { get { return Selector.MouseHoveredItem; } set { Selector.MouseHoveredItem = value; } }
 
         // 드래그 선택
         public Point DragStart { get; set; }
@@ -71,7 +73,7 @@ namespace TestWPF
         private Rectangle rectangle;
         public delegate void FOnDragSelectionDelegate(Rect dragRect);
         FOnDragSelectionDelegate OnDragSelectionDelegate;
-        public HashSet<MyItem> DragItemList { get; set; } = new();
+        public HashSet<MyItem> DragItemList { get { return Selector.DragItemList; } }
 
         public Color MyColor = Colors.Gray;
 

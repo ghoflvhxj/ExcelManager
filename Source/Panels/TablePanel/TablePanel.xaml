@@ -7,6 +7,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
     <UserControl.Resources>
+        <ContextMenu x:Key="RoundButtonContextMenu">
+            <MenuItem Header="이름 변경" Click="MenuItem_ChangeBookmarkName"/>
+            <MenuItem Header="삭제" Click="MenuItem_RemoveBookmark"/>
+        </ContextMenu>
         <Style TargetType="Button" x:Key="RoundSystemButton">
             <Style.Resources>
             </Style.Resources>
@@ -53,8 +57,8 @@
                     <ColumnDefinition></ColumnDefinition>
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <Button Click="Button_Click_1" Grid.Column="0">Doc</Button>
-                <Button Click="Button_Click_1" Grid.Column="1">테스트2</Button>
+                <Button Click="Button_Click_1" Grid.Column="0">Doc 폴더 열기</Button>
+                <Button Click="Button_Click_2" Grid.Column="1">테이블 뷰어 테스트</Button>
                 <Button Click="Button_Click_1" Grid.Column="2">테스트3</Button>
             </Grid>
         </GroupBox>
@@ -68,13 +72,13 @@
                 <!--<Border BorderThickness="1" CornerRadius="8" Background="AliceBlue" DockPanel.Dock="Top" BorderBrush="#FF5400B9">-->
                 <UniformGrid x:Name="SystemFixedPanel" Background="#FFCFCFCF" DockPanel.Dock="Top" Rows="2">
                     <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundSystemButton}" Click="Button_Click">전체</Button>
-                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundSystemButton}" Click="Button_Click_2">최근 사용</Button>
+                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Style="{DynamicResource RoundSystemButton}" Click="Button_Click_2" IsEnabled="False">최근 사용</Button>
                 </UniformGrid>
                 <!--</Border>-->
                 <!--<Border BorderThickness="1" CornerRadius="8" Background="AliceBlue" DockPanel.Dock="Bottom">-->
                 <UniformGrid  VerticalAlignment="Stretch" Background="#FFCFCFCF" DockPanel.Dock="Bottom" Rows="10">
                     <StackPanel x:Name="CustomPanel">
-                        <d:Button Style="{DynamicResource RoundButton}">테스트</d:Button>
+                        <d:Button Style="{DynamicResource RoundButton}" Content ="테스트"></d:Button>
                     </StackPanel>
                 </UniformGrid>
                 <!--</Border>-->
@@ -88,9 +92,9 @@
                             <MenuItem Header="새로 만들기"  Click="MenuItem_Click"></MenuItem>
                         </MenuItem>
                         <Separator/>
-                        <MenuItem Header="참조된 테이블을 연결시켜 보기" Click="MenuItem_Click_1"></MenuItem>
-                        <MenuItem Header="칼럼 편집"></MenuItem>
-                        <MenuItem Header="참조 목록 편집" Click="MenuItem_Click_2"></MenuItem>
+                        <!--<MenuItem Header="참조된 테이블을 연결시켜 보기" Click="MenuItem_Click_1"></MenuItem>-->
+                        <!--<MenuItem Header="칼럼 편집"></MenuItem>-->
+                        <!--<MenuItem Header="참조 목록 편집" Click="MenuItem_Click_2"></MenuItem>-->
                         <Separator/>
                     </ContextMenu>
                 </Border.ContextMenu>

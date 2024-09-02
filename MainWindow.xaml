@@ -21,12 +21,12 @@
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <TabControl Grid.Column="0">
-                    <TabItem>
+                    <!--<TabItem>
                         <TabItem.Header>
                             <Label>에디터</Label>
                         </TabItem.Header>
                         <local:EditorPanel x:Name="MyEditorPannel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></local:EditorPanel>
-                    </TabItem>
+                    </TabItem>-->
                     <TabItem>
                         <TabItem.Header>
                             <Label>테이블 관리</Label>
@@ -42,7 +42,7 @@
                     </TabItem>
                 </TabControl>
                 <GroupBox Grid.Column="1">
-                    <Grid>
+                    <Grid x:Name="RightGrid">
                         <Grid.RowDefinitions>
                             <RowDefinition></RowDefinition>
                             <RowDefinition></RowDefinition>

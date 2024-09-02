@@ -195,6 +195,9 @@ namespace TestWPF
 
                 CustomPanel.Children.Add(bookmark);
 
+                bookmark.ContextMenu = FindResource("RoundButtonContextMenu") as ContextMenu;
+                bookmark.ContextMenu.PlacementTarget = bookmark;
+
                 bookmark.Click += delegate (object sender, RoutedEventArgs e)
                 {
                     TableItemViewer.ClearItems();
@@ -423,7 +426,58 @@ namespace TestWPF
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
+            TestWindow a = new();
+            a.Show();
+
             
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void MenuItem_ChangeBookmarkName(object sender, RoutedEventArgs e)
+        {
+            TextInputDialog a = new("북마크 이름 변경");
+            a.Show();
+            a.onClicked += delegate ()
+            {
+                MenuItem mnu = sender as MenuItem;
+                Button button = null;
+
+                if (mnu == null)
+                {
+                    return;
+                }
+
+                button = ((ContextMenu)mnu.Parent).PlacementTarget as Button;
+                //Button button = sender as Button;
+                WorkSpace newWorkSpace = WorkSpace.Current.Clone() as WorkSpace;
+                string oldBookmarkName = button.Content as string;
+                WorkSpace.Current.BookmarkMap[a.InputText] = WorkSpace.Current.BookmarkMap[oldBookmarkName];
+                WorkSpace.Current.BookmarkMap.Remove(oldBookmarkName);
+
+                WorkSpace.Current = newWorkSpace;
+            };
+        }
+
+        private void MenuItem_RemoveBookmark(object sender, RoutedEventArgs e)
+        {
+            MenuItem mnu = sender as MenuItem;
+            Button button = null;
+
+            if (mnu == null)
+            {
+                return;
+            }
+
+            button = ((ContextMenu)mnu.Parent).PlacementTarget as Button;
+            string oldBookmarkName = button.Content as string;
+            WorkSpace newWorkSpace = WorkSpace.Current.Clone() as WorkSpace;
+            WorkSpace.Current.BookmarkMap.Remove(oldBookmarkName);
+
+            WorkSpace.Current = newWorkSpace;
         }
 
         //private void Button_Click_1(object sender, RoutedEventArgs e)
@@ -466,5 +520,5 @@ namespace TestWPF
         //    //checkBoxSelector.InitializeItemList(dirtyTableNames);
         //    checkBoxSelector.Show();
         //}
-    }
+        }
 }

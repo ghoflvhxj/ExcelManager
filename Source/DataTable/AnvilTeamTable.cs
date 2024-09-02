@@ -672,101 +672,101 @@ namespace TestWPF
                     continue;
                 }
 
+                string message = "";
                 string originCellValue = cellObject.ToString();
                 switch (resourceCheckInfo.resourcePathType)
                 {
                     case EResourcePathType.FileName:
+                    {
+                        string fileName = originCellValue;
+                        if (MainWindow.allFileName.ContainsKey(fileName) == false)
                         {
-                            string fileName = originCellValue;
-                            if (MainWindow.allFileName.ContainsKey(fileName) == false)
+                            message = GetRowColumnString(excelPath, row, colName, fileName);
+                            string fileNameAsKey = Utility.NameAsKey(fileName);
+                            if (MainWindow.allFileNameAsKey.ContainsKey(fileNameAsKey))
                             {
-                                string message = GetRowColumnString(excelPath, row, colName, fileName);
-                                string fileNameAsKey = Utility.NameAsKey(fileName);
-                                if (MainWindow.allFileNameAsKey.ContainsKey(fileNameAsKey))
-                                {
-                                    message += GetCheckResultAsMessage(ECheckResult.InvalidFileName, fileName, fileNameAsKey);
-                                    //GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = MainWindow.allFileNameAsKey[fileNameAsKey];
-                                }
-                                else
-                                {
-                                    message += GetCheckResultAsMessage(ECheckResult.NotExistFile, fileName);
-                                }
+                                message += GetCheckResultAsMessage(ECheckResult.InvalidFileName, fileName, fileNameAsKey);
+                                //GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = MainWindow.allFileNameAsKey[fileNameAsKey];
+                            }
+                            else
+                            {
+                                message += GetCheckResultAsMessage(ECheckResult.NotExistFile, fileName);
                             }
                         }
-                        break;
+                    }
+                    break;
                     case EResourcePathType.Path:
+                    {
+                        string resourcePath = originCellValue;
+                        string fileName = Path.GetFileName(resourcePath);
+                        if (resourcePath[0] == '/')
                         {
-                            string resourcePath = originCellValue;
-                            string fileName = Path.GetFileName(resourcePath);
-                            if (resourcePath[0] == '/')
+                            resourcePath = resourcePath.Substring(1);
+                        }
+
+                        string[] directoryNames = Path.GetDirectoryName(resourcePath).Split('\\');
+                        if (directoryNames.Length > 0)
+                        {
+                            int offset = 0;
+                            if (directoryNames[0] == "Game")
                             {
-                                resourcePath = resourcePath.Substring(1);
+                                ++offset;
                             }
 
-                            string[] directoryNames = Path.GetDirectoryName(resourcePath).Split('\\');
-                            if (directoryNames.Length > 0)
+                            // 폴더 이름 검사
+                            for (int i = directoryNames.Length - 1; i >= offset; --i)
                             {
-                                int offset = 0;
-                                if (directoryNames[0] == "Game")
+                                if (MainWindow.allDirectoryName.ContainsKey(directoryNames[i]))
                                 {
-                                    ++offset;
+                                    continue;
                                 }
 
-                                string message = "";
-                                // 폴더 이름 검사
-                                for (int i = directoryNames.Length - 1; i >= offset; --i)
+                                message = (message.Length != 0) ? message : GetRowColumnString(excelPath, row, colName, resourcePath);
+
+                                string directoryNameAsKey = Utility.NameAsKey(directoryNames[i]);
+                                if (MainWindow.allDirectoryActualNames.ContainsKey(directoryNameAsKey))
                                 {
-                                    if (MainWindow.allDirectoryName.ContainsKey(directoryNames[i]))
+                                    if (i > 1 && MainWindow.allDirectoryParentNames[directoryNameAsKey].Contains(Utility.NameAsKey(directoryNames[i - 1])))
                                     {
-                                        continue;
-                                    }
-
-                                    message = (message.Length != 0) ? message : GetRowColumnString(excelPath, row, colName, resourcePath);
-
-                                    string directoryNameAsKey = Utility.NameAsKey(directoryNames[i]);
-                                    if (MainWindow.allDirectoryActualNames.ContainsKey(directoryNameAsKey))
-                                    {
-                                        if (i > 1 && MainWindow.allDirectoryParentNames[directoryNameAsKey].Contains(Utility.NameAsKey(directoryNames[i - 1])))
-                                        {
-                                            message += GetCheckResultAsMessage(ECheckResult.InvalidDirectoryName, directoryNames[i], directoryNameAsKey);
-                                            string onlyDirectroy = originCellValue.Substring(0, originCellValue.LastIndexOf('/') + 1);
-                                            //GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = originCellValue = onlyDirectroy.Replace(directoryNames[i], MainWindow.allDirectoryActualNames[directoryNameAsKey]) + fileName;
-                                        }
-                                        else
-                                        {
-                                            message += GetCheckResultAsMessage(ECheckResult.NotExistDirectory, directoryNames[i]);
-                                        }
+                                        message += GetCheckResultAsMessage(ECheckResult.InvalidDirectoryName, directoryNames[i], directoryNameAsKey);
+                                        string onlyDirectroy = originCellValue.Substring(0, originCellValue.LastIndexOf('/') + 1);
+                                        //GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = originCellValue = onlyDirectroy.Replace(directoryNames[i], MainWindow.allDirectoryActualNames[directoryNameAsKey]) + fileName;
                                     }
                                     else
                                     {
                                         message += GetCheckResultAsMessage(ECheckResult.NotExistDirectory, directoryNames[i]);
                                     }
                                 }
-                                // 파일 이름 검사
-                                string fileNameAsKey = Utility.NameAsKey(fileName);
-                                bool bWrongLetter = MainWindow.allFileName.ContainsKey(fileName) == false;
-                                bool bExist = MainWindow.allFileNameAsKey.ContainsKey(fileNameAsKey);
-                                if (bWrongLetter && bExist)
+                                else
                                 {
-                                    message = (message.Length != 0) ? message : GetRowColumnString(excelPath, row, colName, resourcePath);
-                                    message += GetCheckResultAsMessage(ECheckResult.InvalidFileName, fileName, fileNameAsKey);
-
-                                    string onlyDirectroy = originCellValue.Substring(0, originCellValue.LastIndexOf('/') + 1);
-                                    //GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = onlyDirectroy + MainWindow.allFileNameAsKey[fileNameAsKey];
-                                }
-                                else if (bExist == false)
-                                {
-                                    message = (message.Length != 0) ? message : GetRowColumnString(excelPath, row, colName, resourcePath);
-                                    message += GetCheckResultAsMessage(ECheckResult.NotExistFile, fileName);
-                                }
-
-                                if (message.Length > 0)
-                                {
-                                    Utility.Log(message, LogType.Warning);
+                                    message += GetCheckResultAsMessage(ECheckResult.NotExistDirectory, directoryNames[i]);
                                 }
                             }
+                            // 파일 이름 검사
+                            string fileNameAsKey = Utility.NameAsKey(fileName);
+                            bool bWrongLetter = MainWindow.allFileName.ContainsKey(fileName) == false;
+                            bool bExist = MainWindow.allFileNameAsKey.ContainsKey(fileNameAsKey);
+                            if (bWrongLetter && bExist)
+                            {
+                                message = (message.Length != 0) ? message : GetRowColumnString(excelPath, row, colName, resourcePath);
+                                message += GetCheckResultAsMessage(ECheckResult.InvalidFileName, fileName, fileNameAsKey);
+
+                                string onlyDirectroy = originCellValue.Substring(0, originCellValue.LastIndexOf('/') + 1);
+                                //GameDataTable.GameDataTableMap[excelPath].DataArray[row, columnIndex] = onlyDirectroy + MainWindow.allFileNameAsKey[fileNameAsKey];
+                            }
+                            else if (bExist == false)
+                            {
+                                message = (message.Length != 0) ? message : GetRowColumnString(excelPath, row, colName, resourcePath);
+                                message += GetCheckResultAsMessage(ECheckResult.NotExistFile, fileName);
+                            }
                         }
-                        break;
+                    }
+                    break;
+                }
+
+                if (message.Length > 0)
+                {
+                    Utility.Log(message, LogType.Warning);
                 }
             }
         }

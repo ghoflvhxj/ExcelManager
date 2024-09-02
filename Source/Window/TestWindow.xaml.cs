@@ -17,25 +17,53 @@ namespace TestWPF
     public partial class TestWindow : Window
     {
         public List<TableUI> SelectedItems { get; set; } = new();
-        TableUI a = new();
+        List<TableUI> TableUIList = new();
         public TestWindow()
         {
             InitializeComponent();
 
+            Random random = new();
+            List<string> ep = MExcel.excelPaths.ToList();
+            List<GameDataTable> temp = new();
+            for(int i=0; i<3; ++i)
+            {
+                temp.Add(GameDataTable.GameDataTableMap[ep[random.Next() % ep.Count]]);
+            }
+            
+            SetGameDataTables(temp);
+
             //TableUI a = new();
-            a.SetGameDataTable(GameDataTable.GetTableByPath(MExcel.excelPaths.First<string>()));
+            //a.SetGameDataTable(GameDataTable.GetTableByPath(MExcel.excelPaths.First<string>()));
 
-            Canvas.SetLeft(a, 0);
-            Canvas.SetTop(a, 0);
+            //Canvas.SetLeft(a, 0);
+            //Canvas.SetTop(a, 0);
 
-            CanvasPanel.Children.Add(a);
+            //CanvasPanel.Children.Add(a);
+        }
+
+        public void SetGameDataTables(List<GameDataTable> gameDataTables)
+        {
+            Random random = new();
+
+            foreach (GameDataTable gameDataTable in gameDataTables)
+            {
+                TableUI a = new();
+                a.SetGameDataTable(gameDataTable);
+
+                Canvas.SetLeft(a, random.Next() % 500);
+                Canvas.SetTop(a, random.Next() % 500);
+
+                TableUIList.Add(a);
+
+                CanvasPanel.Children.Add(a);
+            }
         }
 
         private void CanvansPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            Utility.Log("pos: " + e.GetPosition(CanvasPanel).X + ", " + e.GetPosition(CanvasPanel).Y);
-            Canvas.SetLeft(a, e.GetPosition(CanvasPanel).X);
-            Canvas.SetTop(a, e.GetPosition(CanvasPanel).Y);
+            //Utility.Log("pos: " + e.GetPosition(CanvasPanel).X + ", " + e.GetPosition(CanvasPanel).Y);
+            //Canvas.SetLeft(a, e.GetPosition(CanvasPanel).X);
+            //Canvas.SetTop(a, e.GetPosition(CanvasPanel).Y);
         }
     }
 

@@ -135,7 +135,7 @@ namespace TestWPF
         {
             string fileName = Utility.GetOnlyFileName(FilePath);
 
-            Utility.Log(fileName + "로드 시작");
+            Utility.Log(fileName + " 로드 시작");
             if (File.Exists(FilePath) == false)
             {
                 Utility.Log(fileName + " 로드 실패", LogType.Warning);
@@ -450,6 +450,7 @@ namespace TestWPF
             }
 
             Utility.AsyncJsonSerialize(CacheDataPath, a);
+            Utility.Log("캐시 데이터 저장 완료");
         }
 
         public static void LoadCacheData()
