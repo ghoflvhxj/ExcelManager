@@ -71,7 +71,7 @@ namespace TestWPF
 
         public static string GetExcelPathByTableName(string tableName)
         {
-            return excelFileNameToPath.ContainsKey(tableName) ? excelFileNameToPath[tableName] : null;
+            return excelFileNameToPath.ContainsKey(tableName) ? excelFileNameToPath[tableName] : string.Empty;
         }
 
         public static GameDataTable GetTableByPath(string excelFilePath)

@@ -205,7 +205,11 @@ namespace TestWPF
                     List<string> excelPathList = new();
                     foreach (string tableName in pair.Value)
                     {
-                        excelPathList.Add(MExcel.GetExcelPathByTableName(tableName));
+                        string excelPath = MExcel.GetExcelPathByTableName(tableName);
+                        if(excelPath.Equals(string.Empty) == false)
+                        {
+                            excelPathList.Add(excelPath);
+                        }
                     }
 
                     InitializeTableItems(excelPathList);
