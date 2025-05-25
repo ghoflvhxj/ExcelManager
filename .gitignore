@@ -2,3 +2,6 @@
 obj
 .vs
 Data
+Source/DataTable/AnvilDataTable.cs
+Source/DataTable/AnvilTeamTable.cs
+Source/DataTable/GGGDataTable.cs
